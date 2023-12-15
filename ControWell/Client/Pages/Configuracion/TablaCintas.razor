@@ -1,0 +1,123 @@
+﻿@inject HttpClient Http
+@inject SweetAlertService Swal
+<table class="table table-success table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Descripcion</th>
+            <th scope="col">Editar</th>
+            <th scope="col">Eliminar</th>           
+            <th scope="col">Rangos</th>           
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var i in Cintas)
+        {
+            <tr>
+                <td>@i.Nombre</td>
+                <td>@i.Descripcion</td>
+                <td>
+                    <button type="button" class="btn btn-primary" @onclick="(()=>EditarCinta(i))" data-bs-toggle="modal" data-bs-target="#EditarCinta">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-warning" @onclick="(()=>Eliminar(i))">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#NivelesCinta" @onclick="(()=>AsignarNiveles(i))">
+                        <i class="bi bi-file-ruled-fill"></i>
+                    </button>
+                    
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+<div style="display:flex;justify-content:center">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModalCinta">
+        Nueva Cinta
+    </button>
+</div>
+<!-- Button trigger modal -->
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCinta" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <FormularioCinta NuevaCinta="cinta" Edita="edita" />
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="NivelesCinta" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <FormularioNivelesCinta cinta="cinta"/>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="EditarCinta" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <FormularioCinta NuevaCinta="cinta" Edita="edita" />
+        </div>
+    </div>
+</div>
+@code {
+    public static List<Cinta> Cintas = new List<Cinta>();
+    int edita = 0;
+    Cinta cinta=new Cinta();
+    async Task ActualizarDatos()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Cinta>>("api/Cinta");
+        if (resultado != null)
+            Cintas = resultado;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await ActualizarDatos();
+    }
+
+    void AsignarNiveles(Cinta cin)
+    {
+        cinta = cin;
+    }
+
+    async Task Eliminar(Cinta cinta)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar",
+                Text = "¿ Estas seguro que deseas eliminar ?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Eliminar",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (confirmado)
+        {
+            await Http.DeleteAsync($"api/Cinta/{cinta.Id}");
+            await ActualizarDatos();
+            var exito = await Swal.FireAsync(new SweetAlertOptions
+                {
+                    Position = "center",
+                    Title = "Eliminado Correctamente",
+                    Icon = SweetAlertIcon.Success,
+                    ShowCancelButton = false,
+                    Timer = 1500
+                });
+        } 
+    }
+    async Task EditarCinta(Cinta micinta)
+    {
+        cinta = micinta;
+        edita = 1;
+    }
+}

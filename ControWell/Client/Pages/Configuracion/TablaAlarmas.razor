@@ -1,0 +1,59 @@
+﻿@inject HttpClient Http
+<table class="table table-success table-striped">
+    <thead>
+        <tr>
+            <th>Pozo</th>
+            <th>Variable</th>
+            <th>Unidad</th>
+            <th>Maximo</th>
+            <th>Minimo</th>
+            <th>Habilitado</th>
+            <th>Editar</th>
+            <th>Eliminar</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var i in Alarmas)
+        {
+            <tr>
+                <td>@i.Pozo.NombrePozo</td>
+                <td>@i.VariableProceso.Nombre</td>
+                <td>@i.VariableProceso.Unidad</td>
+                <td>@i.Max</td>
+                <td>@i.Min</td>
+                <td>@i.Habilitado</td>
+
+
+
+                <td>
+                    <button type="button" class="btn btn-primary">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-warning">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+@code {
+    public static List<Alarma> Alarmas = new List<Alarma>();
+
+    async Task ActualizarDatos()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Alarma>>("api/Alarma");
+        if (resultado != null)
+            Alarmas = resultado;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarDatos();
+    }
+
+}

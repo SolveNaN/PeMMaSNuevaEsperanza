@@ -1,0 +1,11 @@
+C:\Users\Dagoberto\Documents\ControWell\Shared\bin\Release\net7.0\ControWell.Shared.deps.json
+C:\Users\Dagoberto\Documents\ControWell\Shared\bin\Release\net7.0\ControWell.Shared.dll
+C:\Users\Dagoberto\Documents\ControWell\Shared\bin\Release\net7.0\ControWell.Shared.pdb
+C:\Users\Dagoberto\Documents\ControWell\Shared\obj\Release\net7.0\ControWell.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dagoberto\Documents\ControWell\Shared\obj\Release\net7.0\ControWell.Shared.AssemblyInfoInputs.cache
+C:\Users\Dagoberto\Documents\ControWell\Shared\obj\Release\net7.0\ControWell.Shared.AssemblyInfo.cs
+C:\Users\Dagoberto\Documents\ControWell\Shared\obj\Release\net7.0\ControWell.Shared.csproj.CoreCompileInputs.cache
+C:\Users\Dagoberto\Documents\ControWell\Shared\obj\Release\net7.0\ControWell.Shared.dll
+C:\Users\Dagoberto\Documents\ControWell\Shared\obj\Release\net7.0\refint\ControWell.Shared.dll
+C:\Users\Dagoberto\Documents\ControWell\Shared\obj\Release\net7.0\ControWell.Shared.pdb
+C:\Users\Dagoberto\Documents\ControWell\Shared\obj\Release\net7.0\ref\ControWell.Shared.dll

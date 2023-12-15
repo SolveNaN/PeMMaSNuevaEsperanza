@@ -1,0 +1,93 @@
+﻿@inject HttpClient Http
+<div class="row" style="display:flex;justify-content:center">
+    <div class="col-sm-2">
+        <Card>
+            <CardBody>
+                <div class="row" style="display:flex;align-items:center">
+                    <div>
+                        <p style="">Fluido almacenado</p>
+                        <b style="">CRUDO: @consolidado.SumaNsv(StockHoy.Where(x => x.Tanque.TipoFluido == "Crudo").ToList()) Bbls</b><br />
+                        <b style="color:chocolate">NAFTA: @consolidado.SumaNsv(StockHoy.Where(x => x.Tanque.TipoFluido == "Refinado").ToList()) Bbls</b>
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
+    </div>
+    <div class="col-sm-2">
+        <Card>
+            <CardBody>
+                <div class="row" style="display:flex;align-items:center">
+                    <div>
+                        <p style="">CRUDO PRODUCIDO</p>
+                        <b style="">HOY: @produccion Bbls</b><br />
+                        <b style="">AYER: 1541 Bbls</b>
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
+    </div>
+    <div class="col-sm-2">
+        <Card>
+            <CardBody>
+                <div class="row" style="display:flex;align-items:center">
+                    <div>
+                        <p style="">CRUDO DESPACHADO</p>
+                        <b style="">HOY: @consolidado.SumaDeltaNsv(RegistrosMovHoy.Where(x=>x.Tanque.TipoFluido=="Crudo"&&x.TipoMovimiento=="Despacho").ToList()) Bbls</b><br />
+                        <b style="">AYER: @consolidado.SumaDeltaNsv(RegistrosMovAyer.Where(x => x.Tanque.TipoFluido == "Crudo" && x.TipoMovimiento == "Despacho").ToList()) Bbls</b>
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
+    </div>
+    <div class="col-sm-2">
+        <Card>
+            <CardBody>
+                <div class="row" style="display:flex;align-items:center">
+                    <div>
+                        <p style="">NAFTA INYECTADA</p>
+                        <b style="">HOY: 10000 Bbls</b>
+                        <b style="">AYER: 1541 Bbls</b>
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
+    </div>
+    <div class="col-sm-2">
+        <Card>
+            <CardBody>
+                <div class="row" style="display:flex;align-items:center">
+                    <div>
+                        <p style="">NAFTA RECIBIDA</p>
+                        <b style="">HOY: 10000 Bbls</b>
+                        <b style="">AYER: 1541 Bbls</b>
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
+    </div>
+</div>
+<br />
+@code {
+    Consulta consulta = new Consulta();
+    Consulta consultaAyer = new Consulta();
+    Consolidado consolidado = new Consolidado();
+    public static List<Balance> StockHoy = new List<Balance>();
+    public static List<Balance> StockAyer = new List<Balance>();
+    public static List<Balance> RegistrosMovHoy = new List<Balance>();
+    public static List<Balance> RegistrosMovAyer = new List<Balance>();
+    double produccion = 0;
+    protected override async Task OnInitializedAsync()
+    {        
+        var ultimos = await Http.PostAsJsonAsync($"api/Balance/Aforos", consulta);
+        StockHoy = await ultimos.Content.ReadFromJsonAsync<List<Balance>>();
+        consultaAyer.FechaInicial = DateTime.Today.AddDays(-1);
+        consultaAyer.FechaFinal = DateTime.Now.AddDays(-1);
+        var ultimosayer = await Http.PostAsJsonAsync($"api/Balance/Aforos", consultaAyer);        
+        StockAyer = await ultimosayer.Content.ReadFromJsonAsync<List<Balance>>();
+        var reghoy = await Http.PostAsJsonAsync($"api/Balance/Rango", consulta);
+        RegistrosMovHoy = await reghoy.Content.ReadFromJsonAsync<List<Balance>>();
+        var regayer = await Http.PostAsJsonAsync($"api/Balance/Rango", consultaAyer);
+        RegistrosMovAyer = await regayer.Content.ReadFromJsonAsync<List<Balance>>();
+        produccion = consolidado.SumaDeltaNsv(RegistrosMovHoy.Where(y=>y.TipoMovimiento=="Produccion"&&y.Tanque.TipoFluido=="Crudo").ToList()) - (consolidado.SumaNsv(StockAyer.Where(x => x.Tanque.TipoFluido == "Refinado").ToList()) - consolidado.SumaNsv(StockHoy.Where(x => x.Tanque.TipoFluido == "Refinado").ToList()) - consolidado.SumaDeltaNsv(RegistrosMovHoy.Where(x => x.Tanque.TipoFluido == "Refinado").ToList()));
+    }
+}

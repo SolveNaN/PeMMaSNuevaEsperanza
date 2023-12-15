@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\assets\.DS_Store" />
+    <None Include="wwwroot\assets\css\.DS_Store" />
+    <None Include="wwwroot\assets\images\.DS_Store" />
+    <None Include="wwwroot\assets\images\users\.DS_Store" />
+    <None Include="wwwroot\assets\js\.DS_Store" />
+    <None Include="wwwroot\assets\plugins\.DS_Store" />
+    <None Include="wwwroot\assets\plugins\bootstrap\.DS_Store" />
+    <None Include="wwwroot\assets\plugins\fontawesome\.DS_Store" />
+    <None Include="wwwroot\assets\plugins\fontawesome\svgs\.DS_Store" />
+    <None Include="wwwroot\assets\scss\.DS_Store" />
+    <None Include="wwwroot\assets\scss\app\.DS_Store" />
+    <None Include="wwwroot\assets\scss\bootstrap\.DS_Store" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazor.Bootstrap" Version="1.10.4" />
+    <PackageReference Include="CurrieTechnologies.Razor.SweetAlert2" Version="5.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.13" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.14" />
+    <PackageReference Include="NPOI" Version="2.6.2" />
+    <PackageReference Include="Plotly.Blazor" Version="4.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\ControWell.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+  </ItemGroup>
+
+</Project>

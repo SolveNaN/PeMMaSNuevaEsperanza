@@ -1,0 +1,220 @@
+﻿@page "/operarioslist"
+@using ControWell.Shared
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject SweetAlertService Swal
+
+<table class="table table-success table-striped">
+    <thead>
+        <tr>
+            @* <th>Id</th>*@
+            <th>Identificador</th>
+            <th>Nombre Operador</th>
+            <th>Cedula</th>           
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var Operario in Operarios)
+        {
+
+            <tr>
+                <td>@Operario.Id</td>
+                @if (update == true && Operario.Id == id || Operario.Nombre == "" && Operario.Cedula == "")
+                {
+                    <td><input @bind-value="@Operario.Nombre" /></td>
+                }
+                else
+                {
+                    <td>@Operario.Nombre</td>
+                }
+                @if (update == true && Operario.Id == id || Operario.Nombre == "" && Operario.Cedula == "")
+                {
+                    <td><input @bind-value="@Operario.Cedula" /></td>
+                }
+                else
+                {
+                    <td>@Operario.Cedula</td>
+                }              
+
+                <td>
+                    @if (update == true && Operario.Id == id)
+                    {
+                        <button type="submit" class="btn btn-info" data-toggle="tooltip" title="Save" @onclick="(()=>UpdateOperario(Operario))">
+                            <i style="position:initial" class="fa-solid fa-circle-check"></i>
+                        </button>
+                        <button class="btn btn-danger" @onclick="Cancelar" data-toggle="tooltip" title="Cancel">
+                            <i style="position:initial" class="fa-solid fa-ban"></i>
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary" data-toggle="tooltip" title="Update" @onclick="(()=> updatedatarow(Operario.Id))"><i style="position:initial" class="oi oi-pencil"></i></button>
+                        <button class="btn btn-warning" data-toggle="tooltip" title="Delete" @onclick="(()=>  DeleteOperario(Operario.Id))"><i style="position:initial" class="oi oi-trash"></i></button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+ <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ModalCrearOperario">
+    Nuevo Operario
+</button>
+
+<div class="modal fade" id="ModalCrearOperario" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <section id="contact" class="contact" style="background: rgb(34,195,158);
+background: linear-gradient(225deg, rgba(34,195,158,1) 0%, rgba(87,102,130,1) 100%);border-radius:5px">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12" data-aos="fade-up" data-aos-delay="100">
+
+                            <div class="php-email-form mt-4">
+                                <div class="modal-body">
+                                    <EditForm Model="Operario" class="auth-form login-form">
+                                        <div class="email mb-3">
+                                            <label class="sr-only" for="signin-email">Nombre</label>
+                                            <input id="signin-email" name="signin-email" type="text" class="form-control signin-email" placeholder="Nombre" required="required" @bind-value=Operario.Nombre>
+                                        </div><!--//form-group-->
+                                        <div class="password mb-3">
+                                            <label class="sr-only" for="signin-password">Cedula</label>
+                                            <input id="signin-password" name="signin-password" type="text" class="form-control signin-password" placeholder="Cedula" required="required" @bind-value=Operario.Cedula>
+
+                                        </div><!--//form-group-->
+                                        <div class="text-center">
+                                            <button type="submit" class="btn app-btn-primary w-100 theme-btn mx-auto" @onclick=EviarOperario data-bs-dismiss="modal">Crear Operario</button>
+                                        </div>
+                                    </EditForm>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </section><!-- End Contact Section -->
+        </div>
+    </div>
+</div>
+
+@code {
+
+    Boolean state = false;
+    Boolean update = false;
+    int id;
+    
+
+    public static List<Operario> Operarios = new List<Operario>();
+
+    async Task Actualizar()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Operario>>("api/operario");
+        if (resultado != null)
+            Operarios = resultado;
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Actualizar();
+    }
+
+    [Parameter]
+
+    public int? Id { get; set; }
+
+    Operario Operario = new Operario();
+
+
+    async Task EviarOperario()
+    {
+        await Http.PostAsJsonAsync("api/Operario", Operario);       
+        await Actualizar();
+
+    }
+
+    async Task DeleteOperario(int _id)
+    {
+        await Http.DeleteAsync($"api/Operario{Operario.Id}");       
+        await Actualizar();
+
+    }
+
+    async Task UpdateOperario(Operario Operario)
+    {
+        await Http.PutAsJsonAsync($"api/Operario{Operario.Id}", Operario);
+
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Success",
+                Text = "Actualizado correctamente",
+                Icon = SweetAlertIcon.Success,
+            });
+
+        await Actualizar();
+        update = false;
+    }
+
+    void updatedatarow(int _id)
+    {
+        update = true;
+        id = _id;
+    }
+
+    void Cancelar()
+    {
+        state = false;
+        update = false;
+    }
+
+    async Task AddOperario()
+    {
+        Operario.Nombre = "";
+        Operario.Cedula = "";
+        Operario.Estado = "Activo";
+
+        try
+        {
+            await Http.PostAsJsonAsync("api/Operario", Operario);         
+           
+            _title = "Agregado";
+            _message = "Item Agregado";
+        }
+        catch (InvalidCastException e)
+        {
+            Console.WriteLine(e);
+
+            state = false;
+           
+            await Actualizar();
+        }
+        finally
+        {
+            state = false;
+            
+            await Actualizar();
+        }
+
+    }
+    void MostrarUnOperario(int id)
+    {
+        NavigationManager.NavigateTo($"singleoperario/{id}");
+    }
+
+    //TOATER NOTIFICATION
+
+    private string _title = "";
+    private string _message = "";
+    private bool _showProgressBar = true;
+    private bool _showCloseButton = true;
+    private bool _actionOnClick = true;
+    int MaxDisplayedToasts = 8;  
+    
+
+    
+}
+

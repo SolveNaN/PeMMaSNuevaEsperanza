@@ -1,0 +1,170 @@
+﻿@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject SweetAlertService Swal
+<h3>DESPACHOS</h3>
+<br />
+<div style="cursor:pointer">
+    <ControWell.Client.Pages.ComponentesInicio.TanqueGeneral BalanceModal="balance" />
+</div>
+<br />
+<div style="display:flex;justify-content:center">
+    <EditForm Model="balance">
+        <label>Nivel</label>
+        <InputNumber @bind-Value=balance.Nivel class="form-control"></InputNumber>
+        <label>Interfase</label>
+        <InputNumber @bind-Value=balance.Interfase class="form-control"></InputNumber>
+    </EditForm>
+    <EditForm Model="balance">
+        <label>API</label>
+        <InputNumber @bind-Value=balance.Api class="form-control"></InputNumber>
+        <label>TEMP API</label>
+        <InputNumber @bind-Value=balance.TemFluidoApi class="form-control"></InputNumber>
+    </EditForm>
+    <EditForm Model="balance">
+        <label>TEMP AMBIENTE</label>
+        <InputNumber @bind-Value=balance.TemAmbiente class="form-control"></InputNumber>
+        <label>TEMP TANQUE</label>
+        <InputNumber @bind-Value=balance.TemTanque class="form-control"></InputNumber>
+    </EditForm>
+    <EditForm Model="balance">
+        <label>S&W</label>
+        <InputNumber @bind-Value=balance.Syw class="form-control"></InputNumber>
+        <label>KARL FISHER</label>
+        <InputNumber @bind-Value=balance.KarlFisher class="form-control"></InputNumber>
+    </EditForm>
+</div>
+<br />
+<EditForm Model="tanque2">
+    <label>Fluido Almacenado</label>
+    <InputSelect @bind-Value="tanque2.Id" class="form-control" placeholder="Capacidad">
+        <option value="-1">Elegir Tanque</option>
+        @foreach (var i in UltimosMovimientos)
+        {
+            <option value="@i.Tanque.Id.">@i.Tanque.NombreTanque</option>
+        }
+    </InputSelect>
+</EditForm>
+@foreach(var b in UltimosMovimientos)
+{
+    if (b.Tanque.Id == tanque2.Id)
+    {
+        balance2 = b;
+        <ControWell.Client.Pages.ComponentesInicio.TanqueGeneral BalanceModal="b" />
+    }
+    
+}
+<br />
+<div style="display:flex;justify-content:center">
+    <EditForm Model="balance2">
+        <label>Nivel</label>
+        <InputNumber @bind-Value=balance2.Nivel class="form-control"></InputNumber>
+        <label>Interfase</label>
+        <InputNumber @bind-Value=balance2.Interfase class="form-control"></InputNumber>
+    </EditForm>
+    <EditForm Model="balance">
+        <label>API</label>
+        <InputNumber @bind-Value=balance2.Api class="form-control"></InputNumber>
+        <label>TEMP API</label>
+        <InputNumber @bind-Value=balance2.TemFluidoApi class="form-control"></InputNumber>
+    </EditForm>
+    <EditForm Model="balance">
+        <label>TEMP AMBIENTE</label>
+        <InputNumber @bind-Value=balance2.TemAmbiente class="form-control"></InputNumber>
+        <label>TEMP TANQUE</label>
+        <InputNumber @bind-Value=balance2.TemTanque class="form-control"></InputNumber>
+    </EditForm>
+    <EditForm Model="balance">
+        <label>S&W</label>
+        <InputNumber @bind-Value=balance2.Syw class="form-control"></InputNumber>
+        <label>KARL FISHER</label>
+        <InputNumber @bind-Value=balance2.KarlFisher class="form-control"></InputNumber>
+    </EditForm>
+</div>
+<div style="display:flex;justify-content:center">
+    <button class="btn btn-primary" @onclick=VerMas><i class="bi bi-plus-square-fill"></i></button>
+</div>
+<div style="display:flex;justify-content:center">
+    <img src="/CarroTanque.jpg" class="img-fluid" alt="...">
+</div>
+<div style="display:flex;justify-content:center">
+    <button class="btn btn-primary" @onclick=Despachar>Despachar</button>
+</div>
+<!-- Button trigger modal -->
+<Toasts class="p-12" Messages="messages" Placement="@toastsPlacement" style="width:300px;height:500px"/>
+<Button Color="ButtonColor.Secondary" @onclick="() => ChangePlacement(ToastsPlacement.MiddleCenter)">Middle Center</Button>
+@code {
+    [Parameter]
+    public Balance? balance { get; set; }
+    Balance balance2 = new Balance();
+    Tanque tanque2 = new Tanque();
+    Consulta consulta = new Consulta();
+    string verbalance2 = "";
+    public static List<Balance> UltimosMovimientos = new List<Balance>();
+    protected override async Task OnInitializedAsync()
+    {
+        balance.TipoMovimiento = "Despacho";        
+        var ultimos = await Http.PostAsJsonAsync($"api/Balance/Aforos", consulta);
+        UltimosMovimientos = await ultimos.Content.ReadFromJsonAsync<List<Balance>>();
+    }
+
+    void VerMas()
+    {
+        verbalance2 = "";
+    }
+    ToastsPlacement toastsPlacement = ToastsPlacement.TopRight;
+    List<ToastMessage> messages = new();
+
+    private void ChangePlacement(ToastsPlacement placement)
+    {
+        if (!messages.Any())
+        {
+            messages.Add(
+                new ToastMessage()
+                    {
+                        Type = ToastType.Success,
+                        Title = "Blazor Bootstrap",
+                        HelpText = $"{DateTime.Now}",
+                        Message = $"Hello, world! This is a toast message. DateTime: {DateTime.Now} Hello, world! This is a toast message. DateTime: {DateTime.Now}",
+                    });
+        }
+        toastsPlacement = placement;
+    }
+    void Elegir(Balance bal)
+    {
+        balance2 = bal;
+    }
+
+    async Task Despachar()
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Guardar",
+                Text = "¿ Estas seguro que deseas realizar despacho ?",
+                Icon = SweetAlertIcon.Info,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Guardar",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (confirmado)
+        {
+            balance.Id = 0;
+            balance2.Id = 0;
+            var respuesta = await Http.PostAsJsonAsync("api/Balance", balance);
+            var respuesta2 = await Http.PostAsJsonAsync("api/Balance", balance2);
+            
+
+            var exito = await Swal.FireAsync(new SweetAlertOptions
+                {
+                    Position = "center",
+                    Title = "Guardado Correctamente",
+                    Icon = SweetAlertIcon.Success,
+                    ShowCancelButton = false,
+                    Timer = 1500
+                });
+        }
+    }
+}
+}

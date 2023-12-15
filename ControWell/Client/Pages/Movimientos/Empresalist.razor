@@ -1,0 +1,249 @@
+﻿@page "/empresaslist"
+@using ControWell.Shared
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject SweetAlertService Swal
+
+@*TABLA POZOLIST*@
+
+
+<table class="table table-success table-striped">
+    <thead>
+        <tr>
+            @* <th>Id</th>*@
+
+            <th>Codigo</th>
+            <th>Nombre</th>
+            <th>Nit</th>
+            <th>Descripción</th>
+            <th></th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var Empresa in Empresas)
+        {
+
+            <tr>
+                @*<td>@Pozo.Id</td>*@
+                @if (update == true && Empresa.Id == id)
+                {
+                    <td><input @bind-value="@Empresa.Codigo" /></td>
+                }
+                else
+                {
+                    <td>@Empresa.Codigo</td>
+                }
+                @if (update == true && Empresa.Id == id)
+                {
+                    <td><input @bind-value="@Empresa.Nombre" /></td>
+                }
+                else
+                {
+                    <td>@Empresa.Nombre</td>
+                }
+
+                @if (update == true && Empresa.Id == id)
+                {
+                    <td><input @bind-value="@Empresa.Nit" /></td>
+                }
+                else
+                {
+                    <td>@Empresa.Nit</td>
+                }
+                @if (update == true && Empresa.Id == id)
+                {
+                    <td><input @bind-value="@Empresa.Descripcion" /></td>
+                }
+                else
+                {
+                    <td>@Empresa.Descripcion</td>
+                }
+
+                <td>
+                    @if (update == true && Empresa.Id == id)
+                    {
+                        <button type="submit" class="btn btn-info" data-toggle="tooltip" title="Save" @onclick="(()=>UpdateEmpresa(Empresa))">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </button>
+                        <button class="btn btn-danger" @onclick="Cancelar" data-toggle="tooltip" title="Cancel">
+                            <i class="fa-solid fa-ban"></i>
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary" data-toggle="tooltip" title="Update" @onclick="(()=> updatedatarow(Empresa.Id))"><i class="oi oi-pencil"></i></button>
+                        <button class="btn btn-warning" data-toggle="tooltip" title="Delete" @onclick="(()=>  DeleteEmpresa(Empresa.Id))"><i class="oi oi-trash"></i></button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ModalCrearEmpresa">
+    Nueva Empresa
+</button>
+
+<div class="modal fade" id="ModalCrearEmpresa" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <section id="contact" class="contact" style="background: rgb(34,195,158);
+background: linear-gradient(225deg, rgba(34,195,158,1) 0%, rgba(87,102,130,1) 100%);border-radius:5px">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12" data-aos="fade-up" data-aos-delay="100">
+
+                            <div class="php-email-form mt-4">
+                                <div class="modal-body">
+                                    <EditForm Model="MiEmpresa" OnSubmit="EviarEmpresa">
+                                        
+                                        <div>
+                                            <label for="nombre">Nombre Empresa</label>
+                                            <InputText id="nombre" @bind-Value="MiEmpresa.Nombre" class="form-control"></InputText>
+                                        </div>
+                                        <div>
+                                            <label for="nombre">Codigo</label>
+                                            <InputText id="nombre" @bind-Value="MiEmpresa.Codigo" class="form-control"></InputText>
+                                        </div>
+                                        <div>
+                                            <label for="lastname">Nit</label>
+                                            <InputText id="lastname" @bind-Value="MiEmpresa.Nit" class="form-control"></InputText>
+                                        </div>
+                                        <div>
+                                            <label for="lastname">Descripción</label>
+                                            <InputText id="lastname" @bind-Value="MiEmpresa.Descripcion" class="form-control"></InputText>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                            <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Guardar</button>
+                                        </div>
+                                    </EditForm>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </section><!-- End Contact Section -->
+        </div>
+    </div>
+</div>
+@code {
+
+    Boolean state = false;
+    Boolean update = false;
+    int id;
+    Boolean PozosState = false;
+    Boolean vertabla = false;
+    string NombreEmpresa = "";
+    Boolean EstadoTablaNivelesPorEmpresa = false;
+    public static List<Empresa> Empresas = new List<Empresa>();
+
+    bool veraqui { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Empresa>>("api/Empresa");
+        if (resultado != null)
+            Empresas = resultado;
+    }
+
+    [Parameter]
+
+    public int? Id { get; set; }
+    [Parameter]
+    public int ElIdDeLaEmpresa { get; set; }
+
+    Empresa Empresa = new Empresa();
+    Empresa MiEmpresa = new Empresa();
+
+
+    async Task EviarEmpresa()
+    {
+        try
+        {
+            var respuesta = await Http.PostAsJsonAsync("api/Empresa", MiEmpresa);
+            var resultado = await Swal.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Success",
+                    Text = "Guardado correctamente",
+                    Icon = SweetAlertIcon.Success,
+                });
+        }
+        catch (InvalidCastException e)
+        {
+            Console.WriteLine(e);
+
+            state = false;
+            await Actualizar();
+        }
+        finally
+        {
+            state = false;
+            await Actualizar();
+        }
+    }
+
+    async Task DeleteEmpresa(int _id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar",
+                Text = "¿ Estas seguro que deseas eliminar ?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Eliminar",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (!confirmado)
+        {
+            //context.PreventNavigation();
+        }
+        else
+        {
+            var respuesta = await Http.DeleteAsync($"api/Empresa{MiEmpresa.Id}");
+            await Actualizar();
+        }
+
+    }
+
+    async Task UpdateEmpresa(Empresa Empresa)
+    {
+        var respuesta = await Http.PutAsJsonAsync($"api/Empresa{Empresa.Id}", Empresa);
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Success",
+                Text = "Actualizado correctamente",
+                Icon = SweetAlertIcon.Success,
+            });
+
+        await Actualizar();
+    }
+
+    void updatedatarow(int _id)
+    {
+        update = true;
+        id = _id;
+    }
+
+    void Cancelar()
+    {
+        state = false;
+        update = false;
+    }
+
+    async Task Actualizar()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Empresa>>("api/Empresa");
+        if (resultado != null)
+            Empresas = resultado;
+    }
+}

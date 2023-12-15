@@ -1,0 +1,72 @@
+﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+<div class="page">
+
+
+    <main>
+        <div>
+            <NavMenu />
+        </div>
+        <div >
+            <MenuLateral />
+        </div>       
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+<Toasts class="p-3" Messages="messages" Delay="6000" Placement="ToastsPlacement.TopRight" />
+
+
+@code {
+    List<ToastMessage> messages = new List<ToastMessage>();
+
+    private void ShowMessage(ToastType toastType) => messages.Add(CreateToastMessage(ToastType.Primary));
+
+    private ToastMessage CreateToastMessage(ToastType toastType)
+    => new ToastMessage
+        {
+            Type = toastType,
+            Title = "Blazor Bootstrap",
+            HelpText = $"{DateTime.Now}",
+            Message = $"Hello, world! This is a toast message. DateTime: {DateTime.Now}",
+        };
+
+
+    private HubConnection? hubConnection;
+    private List<string> messagesAlert = new List<string>();   
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            var encodedMsg = $"{user}: {message}";
+            messagesAlert.Add(encodedMsg);
+            StateHasChanged();
+            ShowMessage(ToastType.Primary);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+    
+}

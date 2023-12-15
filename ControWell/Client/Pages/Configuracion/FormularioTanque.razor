@@ -1,0 +1,128 @@
+﻿@inject HttpClient Http
+@inject NavigationManager NavigationManager
+<!-- ======= Contact Section ======= -->
+<section id="contact" class="contact" style="background: rgb(34,195,158);
+background: linear-gradient(225deg, rgba(34,195,158,1) 0%, rgba(87,102,130,1) 100%);border-radius:5px">
+    <div class="container">
+        <div class="row">
+
+
+            <div class="col-lg-12" data-aos="fade-up" data-aos-delay="100">
+
+                <EditForm Model="NuevoTanque">
+                    <form class="php-email-form mt-4">
+                        
+                        <div class="form-group mt-3">
+                            <label>Nombre del Tanque</label>
+                            <input type="text" class="form-control" @bind-value=NuevoTanque.NombreTanque name="subject" id="subject" placeholder="Nombre" required>
+                        </div>
+                        
+                        <div class="form-group mt-3">
+                            <label>Capacidad en Bls</label>
+                            <input type="number" class="form-control" @bind-value=NuevoTanque.Capacidad name="subject" id="subject" placeholder="Capacidad" required>
+                        </div>
+                        
+                        <div class="form-group mt-3">
+                            <label>Fluido Almacenado</label>
+                            <InputSelect @bind-Value="NuevoTanque.TipoFluido" class="form-control" placeholder="Capacidad">
+                                <option value="-1">Elegir Tipo Fluido</option>
+                                @foreach (var i in Fluidos)
+                                {
+                                    <option value="@i.Name">@i.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        
+                        <div class="form-group mt-3">
+                            <label>Material</label>
+                            <InputSelect @bind-Value="NuevoTanque.Material" class="form-control">
+                                <option value="-1">Elegir Material</option>
+                                @foreach (var i in Materiales)
+                                {
+                                    <option value="@i.TipoMaterial">@i.TipoMaterial</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        
+                        <div class="form-group mt-3">
+                            <label>Temperatura Base</label>
+                            <input type="number" class="form-control" @bind-value=NuevoTanque.TBase name="subject" id="subject" placeholder="Temp Base" required>
+                        </div>
+                        <div class="my-3">
+
+                            <div class="error-message"></div>
+                            <div class="sent-message">Una vez creado el tanque debe configurar los aforos</div>
+                        </div>
+                        <div class="text-center"><button class="btn btn-primary" @onclick=GuardarTanque>Guardar Tanque</button></div>
+                        <br />
+                    </form>
+                </EditForm>
+            </div>
+        </div>
+
+    </div>
+</section><!-- End Contact Section -->
+
+
+@code {
+    Tanque NuevoTanque = new Tanque();
+    //Lita de Tipo de fluido
+    public static List<Fluido> Fluidos = new List<Fluido>
+    {
+        new Fluido
+        {
+            Id=1,
+            Name="Crudo"
+        },
+        new Fluido
+        {
+            Id=2,
+            Name="Refinado"
+        },
+        new Fluido
+        {
+            Id=3,
+            Name="Lbricante"
+        },
+        new Fluido
+        {
+           Id=4,
+           Name="Agua"
+        }
+
+    };
+    public static List<Material> Materiales = new List<Material>
+    {
+        new Material
+        {
+            Id=1,
+            TipoMaterial="Mild Carbon",
+            CoefLineal=0.125
+        },
+        new Material
+        {
+            Id=2,
+            TipoMaterial="304 Stainless",
+            CoefLineal=0.55
+        },
+        new Material
+        {
+            Id=3,
+            TipoMaterial="316 Stainless",
+            CoefLineal=0.124
+        },
+        new Material
+        {
+            Id=4,
+            TipoMaterial="17-4PH Stainless",
+            CoefLineal=0.124
+        }
+
+    };
+
+    async Task GuardarTanque()
+    {
+        var respuesta = await Http.PostAsJsonAsync("api/Tanque", NuevoTanque);
+        NavigationManager.NavigateTo("/configuracion");
+    }
+}
