@@ -1,0 +1,234 @@
+﻿@if (!(BalanceModal.Nivel > 0))
+{
+    string NombreTan = "tank01.png";
+    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+}
+@try
+{
+    @if (BalanceModal.Tanque.TipoFluido == "Crudo")
+    {
+        <div class="row">
+            <div style="display:flex;justify-content:center">
+                <h6>@BalanceModal.Tanque.NombreTanque</h6>
+                @if (BalanceModal.Nivel <= 5)
+                {
+                    string NombreTan = "tank01.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+
+                @if (BalanceModal.Nivel >= 5 && BalanceModal.Nivel < 15)
+                {
+                    string NombreTan = "tank02.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 15 && BalanceModal.Nivel < 30)
+                {
+                    string NombreTan = "tank03.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 30 && BalanceModal.Nivel < 45)
+                {
+                    string NombreTan = "tank04.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+
+                @if (BalanceModal.Nivel >= 45 && BalanceModal.Nivel < 60)
+                {
+                    string NombreTan = "tank05.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 60 && BalanceModal.Nivel < 75)
+                {
+                    string NombreTan = "tank06.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 75 && BalanceModal.Nivel < 90)
+                {
+                    string NombreTan = "tank07.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 90 && BalanceModal.Nivel < 105)
+                {
+                    string NombreTan = "tank08.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 105 && BalanceModal.Nivel < 120)
+                {
+                    string NombreTan = "tank09.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 120 && BalanceModal.Nivel < 135)
+                {
+                    string NombreTan = "tank10.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 135 && BalanceModal.Nivel < 150)
+                {
+                    string NombreTan = "tank11.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 150 && BalanceModal.Nivel < 165)
+                {
+                    string NombreTan = "tank12.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 165 && BalanceModal.Nivel < 180)
+                {
+                    string NombreTan = "tank13.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+
+                @if (BalanceModal.Nivel >= 180 && BalanceModal.Nivel < 195)
+                {
+                    string NombreTan = "tank14.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+
+                @if (BalanceModal.Nivel >= 195 && BalanceModal.Nivel < 210)
+                {
+                    string NombreTan = "tank15.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 210 && BalanceModal.Nivel < 225)
+                {
+                    string NombreTan = "tank16.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 225 && BalanceModal.Nivel < 240)
+                {
+                    string NombreTan = "tank17.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 240 && BalanceModal.Nivel < 255)
+                {
+                    string NombreTan = "tank18.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 255)
+                {
+                    string NombreTan = "tank19.png";
+                    <img style="width:80%" src="TanquesCrudo/@NombreTan" />
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div style="display:flex;justify-content:center">
+                <h6>@BalanceModal.Tanque.NombreTanque</h6>
+                @if (BalanceModal.Nivel <= 5)
+                {
+                    string NombreTan = "tank01.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+
+                @if (BalanceModal.Nivel >= 5 && BalanceModal.Nivel < 15)
+                {
+                    string NombreTan = "tank02.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 15 && BalanceModal.Nivel < 30)
+                {
+                    string NombreTan = "tank03.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 30 && BalanceModal.Nivel < 45)
+                {
+                    string NombreTan = "tank04.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+
+                @if (BalanceModal.Nivel >= 45 && BalanceModal.Nivel < 60)
+                {
+                    string NombreTan = "tank05.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 60 && BalanceModal.Nivel < 75)
+                {
+                    string NombreTan = "tank06.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 75 && BalanceModal.Nivel < 90)
+                {
+                    string NombreTan = "tank07.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 90 && BalanceModal.Nivel < 105)
+                {
+                    string NombreTan = "tank08.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 105 && BalanceModal.Nivel < 120)
+                {
+                    string NombreTan = "tank09.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 120 && BalanceModal.Nivel < 135)
+                {
+                    string NombreTan = "tank10.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 135 && BalanceModal.Nivel < 150)
+                {
+                    string NombreTan = "tank11.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 150 && BalanceModal.Nivel < 165)
+                {
+                    string NombreTan = "tank12.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 165 && BalanceModal.Nivel < 180)
+                {
+                    string NombreTan = "tank13.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+
+                @if (BalanceModal.Nivel >= 180 && BalanceModal.Nivel < 195)
+                {
+                    string NombreTan = "tank14.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+
+                @if (BalanceModal.Nivel >= 195 && BalanceModal.Nivel < 210)
+                {
+                    string NombreTan = "tank15.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 210 && BalanceModal.Nivel < 225)
+                {
+                    string NombreTan = "tank16.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 225 && BalanceModal.Nivel < 240)
+                {
+                    string NombreTan = "tank17.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 240 && BalanceModal.Nivel < 255)
+                {
+                    string NombreTan = "tank18.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+                @if (BalanceModal.Nivel >= 255)
+                {
+                    string NombreTan = "tank19.png";
+                    <img style="width:80%" src="TanquesNafta/@NombreTan" />
+                }
+            </div>
+        </div>
+    }
+}
+catch (Exception e)
+{
+    Console.WriteLine("Error en tanque de inicio");
+}
+
+
+
+@code {
+    [Parameter]
+    public Balance? BalanceModal { get; set; } 
+    
+}

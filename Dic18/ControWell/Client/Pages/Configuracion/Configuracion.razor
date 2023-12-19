@@ -1,0 +1,124 @@
+﻿@page "/configuracion"
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
+
+<PageTitle>PeMMaS Configuracion</PageTitle>
+
+<h1>@Titulo</h1>
+<div style="display:flex;justify-content:space-between">
+    <div>
+        Parametros y tablas de corrección
+    </div>
+    <div style="display:@botontanque">
+        <button type="button" class="btn btn-outline-info" @onclick=VerConfiguracionVariables>Configurar Variables</button>        
+    </div>
+    <div style="display:@botonvariable">
+        <button type="button" class="btn btn-outline-info" @onclick=VerConfiguracionTanques>Configurar Tanques</button>
+    </div>
+</div>
+
+<div style="display:@verbotonestanque">
+    <button type="button" class="btn btn-outline-success" @onclick=VerTanques>Tanques</button>
+    <button type="button" class="btn btn-outline-success" @onclick=VerCintas>Cintas</button>
+    <button type="button" class="btn btn-outline-success" @onclick=VerTermometro>Termometros</button>
+</div>
+<div style="display:@verbotonesvariables">
+    <button type="button" class="btn btn-outline-success" @onclick=VerPozos>Pozos</button>
+    <button type="button" class="btn btn-outline-success" @onclick=VerVariable>Variables</button>
+    <button type="button" class="btn btn-outline-success" @onclick=VerAlarmas>Alarmas</button>
+</div>
+<br />
+
+<div style="display:@vertanque">
+    <TablaTanques />
+</div>
+<div style="display:@vercinta">
+    <TablaCintas />
+</div>
+<div style="display:@vertermometro">
+    <TablaTermometro />
+</div>
+<div style="display:@verpozo">
+    <TablaPozos />
+</div>
+<div style="display:@vervariable">
+    <TablaVariableProcesos />
+</div>
+<div style="display:@veralarma">
+    <TablaAlarmas />
+</div>
+@code{
+    string Titulo = "Configuración de Tanques";
+    string vertanque = "";
+    string vercinta = "none";
+    string vertermometro = "none";
+    string verpozo = "none";
+    string vervariable = "none";
+    string veralarma = "none";
+    string verbotonestanque = "";
+    string verbotonesvariables = "none";
+    string botontanque = "";
+    string botonvariable = "none";
+
+    void VerTanques()
+    {
+        vertanque = "";
+        vercinta = "none";
+        vertermometro = "none";
+    }
+    void VerCintas()
+    {
+        vertanque = "none";
+        vercinta = "";
+        vertermometro = "none";
+    }
+    void VerTermometro()
+    {
+        vertanque = "none";
+        vercinta = "none";
+        vertermometro = "";
+    }
+
+    void VerPozos()
+    {        
+        verpozo = "";
+        vervariable = "none";
+        veralarma = "none";
+    }
+
+    void VerVariable()
+    {
+        verpozo = "none";
+        vervariable = "";
+        veralarma = "none";
+    }
+    void VerAlarmas()
+    {
+        verpozo = "none";
+        vervariable = "none";
+        veralarma = "";
+    }
+    void VerConfiguracionVariables(){
+        Titulo = "Configuración de Variables";
+        verbotonestanque = "none";
+        verbotonesvariables = "";
+        botontanque = "none";
+        botonvariable = "";
+        verpozo = "";
+        vertanque = "none";
+        vercinta = "none";
+        vertermometro = "none";
+    }
+    void VerConfiguracionTanques()
+    {
+        Titulo = "Configuración de Tanques";
+        verbotonestanque = "";
+        verbotonesvariables = "none";
+        botontanque = "";
+        botonvariable = "none";
+        verpozo = "none";
+        vertanque = "";
+        veralarma = "none";
+        vervariable = "none";
+    }
+}

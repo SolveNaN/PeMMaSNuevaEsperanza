@@ -1,0 +1,57 @@
+﻿@inject HttpClient Http
+<table class="table table-success table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Ubicación</th>
+            <th>Operadora</th>
+            <th>Comentario</th>
+            <th>Estado</th>
+            <th>Editar</th>
+            <th>Eliminar</th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var i in Pozos)
+        {
+            <tr>
+                <td>@i.NombrePozo</td>
+                <td>@i.Ubicacion</td>
+                <td>@i.Operadora</td>
+                <td>@i.Comentario</td>
+                <td>@i.Estado</td>
+                
+
+                <td>
+                    <button type="button" class="btn btn-primary">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-warning">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </td>
+                
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+@code {
+    public static List<Pozo> Pozos = new List<Pozo>();
+
+    async Task ActualizarDatos()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Pozo>>("api/Pozo");
+        if (resultado != null)
+            Pozos = resultado;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarDatos();
+    }
+
+}

@@ -1,0 +1,310 @@
+﻿@page "/ofertadiaria"
+@using ControWell.Shared
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject SweetAlertService Swal
+
+<div class="table-container-scroll">
+    <table class="table table-bordered collaptable">
+        <thead>
+            <tr>
+                @* <th>Id</th>*@
+                <th>DOC.DE TRANSPORTE</th>
+                <th>EMPRESA TRANSPORTADORA</th>
+                <th>PLACA</th>
+                <th>TANQUE</th>
+                <th>NOMBRE DEL CONDUCTOR</th>
+                <th>CEDULA</th>
+                <th>RUTA</th>
+                <th>CODIGO</th>                
+                <th>OBS</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var oferta in Ofertas)
+            {
+
+                <tr>
+                    <td>@oferta.DocDeTransporte</td>
+                    @*<td>@Pozo.Id</td>*@
+                    @if (update == true && oferta.Id == id)
+                    {
+                        <td></td>
+                    }
+                    else
+                    {
+                        LaEmpresa = oferta.Empresa;
+                        ElConductor = oferta.Conductor;
+                        LaRuta = oferta.Ruta;
+                        <td>@LaEmpresa.Nombre</td>
+                    }
+
+                    <td>@oferta.Placa</td>
+                    <td>@oferta.PlacaTanque</td>
+                    <td>@ElConductor.Nombre</td>
+                    <td>@ElConductor.Cedula</td>
+                    <td>@LaRuta.Nombre</td>
+                    <td>@LaRuta.Codigo</td>                    
+                    <td>@oferta.Observacion</td>
+                    @if (oferta.Disponible == 1)
+                    {
+                        <td>Disponible</td>
+                    }
+                    else
+                    {
+                        <td>No Dispobible</td>
+                    }
+
+                    <td>
+                        @if (update == true && oferta.Id == id)
+                        {
+                            <button type="submit" class="btn btn-info" data-toggle="tooltip" title="Save" @onclick="(()=>UpdateOferta(oferta))">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </button>
+                            <button class="btn btn-danger" @onclick="Cancelar" data-toggle="tooltip" title="Cancel">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary" data-toggle="tooltip" title="Update" @onclick="(()=> updatedatarow(oferta.Id))"><i class="oi oi-pencil"></i></button>
+                            <button class="btn btn-warning" data-toggle="tooltip" title="Delete" @onclick="(()=>  DeleteOferta(oferta.Id))"><i class="oi oi-trash"></i></button>
+
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@*Loading database*@
+@if (PozosState == false)
+{
+    <div id="db-spinner">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+}
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ModalCrearOferta">
+    Crear Oferta
+</button>
+<button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal2">
+    CARGAR OFERTA EXCEL
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="ModalCrearOferta" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <section id="contact" class="contact" style="background: rgb(34,195,158);
+background: linear-gradient(225deg, rgba(34,195,158,1) 0%, rgba(87,102,130,1) 100%);border-radius:5px">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12" data-aos="fade-up" data-aos-delay="100">
+
+                            <div class="php-email-form mt-4">
+                                <div class="modal-body">
+                                    <EditForm Model="MiNuevaOferta" OnSubmit="EviarOferta">
+                                        <br />
+                                        <InputNumber @bind-Value="MiNuevaOferta.DocDeTransporte" placeholder="DOC.DE TRANSPORTE" class="form-control"></InputNumber>
+                                        <br />
+                                        <InputSelect @bind-Value="MiNuevaOferta.EmpresaId" class="form-select" placeholder="Dame una Oferta">
+                                            <option value="-1">SELECIONAR EMPRESA</option>
+                                            @foreach (var empr in Empresas)
+                                            {
+                                                <option value="@empr.Id">@empr.Nombre </option>
+                                            }
+                                        </InputSelect>
+                                        <br />
+                                        <InputText @bind-Value="MiNuevaOferta.Placa" placeholder="PLACA" class="form-control"></InputText>
+                                        <br />
+                                        <InputText @bind-Value="MiNuevaOferta.PlacaTanque" placeholder="TANQUE" class="form-control"></InputText>
+                                        <br />
+                                        <InputSelect @bind-Value="MiNuevaOferta.ConductorId" class="form-select" placeholder="Dame una Oferta">
+                                            <option value="-1">SELECCIONAR CONDUCTOR</option>
+                                            @foreach (var cond in Conductores)
+                                            {
+                                                <option value="@cond.Id">@cond.Nombre </option>
+                                            }
+                                        </InputSelect>
+                                        <br />
+                                        <InputSelect @bind-Value="MiNuevaOferta.RutaId" class="form-select" placeholder="Dame una Oferta">
+                                            <option value="-1">SELECIONAR RUTA</option>
+                                            @foreach (var rut in Rutas)
+                                            {
+                                                <option value="@rut.Id">@rut.Nombre @rut.Codigo </option>
+                                            }
+                                        </InputSelect>
+                                        <br />
+                                        <InputText @bind-Value="MiNuevaOferta.Observacion" placeholder="OBSERVACIÓN" class="form-control"></InputText>
+                                        <br>
+
+                                        <br />
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Eviar Oferta</button>
+                                    </EditForm>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </section><!-- End Contact Section -->
+        </div>
+    </div>
+</div>
+
+@code {
+
+    Boolean state = false;
+    Boolean update = false;
+    int id;
+    Boolean PozosState = false;
+    Boolean vertabla = false;
+    Boolean EstadoTablaNivelesPoroferta = false;
+
+    public static List<OfertaDiaria> Ofertas = new List<OfertaDiaria>();
+    public static List<Vehiculo> Carrotanques = new List<Vehiculo>();
+    public static List<Operario> Conductores = new List<Operario>();
+    public static List<Empresa> Empresas = new List<Empresa>();
+    public static List<Ruta> Rutas = new List<Ruta>();   
+    OfertaDiaria MiNuevaOferta = new OfertaDiaria();
+    bool veraqui { get; set; }
+    Empresa LaEmpresa { get; set; }
+    Conductor ElConductor { get; set; }
+    Ruta LaRuta { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<OfertaDiaria>>("api/OfertaDiaria");
+        if (resultado != null)
+            Ofertas = resultado;
+
+        var carro = await Http.GetFromJsonAsync<List<Vehiculo>>("api/Vehiculo");
+        if (carro != null)
+            Carrotanques = carro;
+
+        var operario = await Http.GetFromJsonAsync<List<Operario>>("api/Conductor");
+        if (operario != null)
+            Conductores = operario;
+
+        var empresa = await Http.GetFromJsonAsync<List<Empresa>>("api/Empresa");
+        if (empresa != null)
+            Empresas = empresa;
+        var ruta = await Http.GetFromJsonAsync<List<Ruta>>("api/Ruta");
+        if (ruta != null)
+            Rutas = ruta;
+        PozosState = true;
+        vertabla = false;
+
+    }
+    OfertaDiaria oferta = new OfertaDiaria();
+    OfertaDiaria NuevaOferta = new OfertaDiaria();
+    async Task EviarOferta()
+    {
+        MiNuevaOferta.Disponible = 1;
+        try
+        {
+            var respuesta = await Http.PostAsJsonAsync("api/OfertaDiaria", MiNuevaOferta);            
+            var resultado = await Swal.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Success",
+                    Text = "Guardado correctamente",
+                    Icon = SweetAlertIcon.Success,
+                });
+        }
+        catch (InvalidCastException e)
+        {
+            Console.WriteLine(e);
+
+            state = false;
+            await Atualizar();
+        }
+        finally
+        {
+            state = false;
+            await Atualizar();
+        }
+    }
+    void NevegarVariablesLista()
+    {
+        //NanigationManager.NavigateTo("/crearpozo");
+        state = true;
+    }
+    string mostrarTablaCorreccion = "none";
+    string mostrarNuevaCalibracion = "none";
+    async Task ObtenerCalibracionoferta(int TerId)
+    {
+        NavigationManager.NavigateTo($"/calibracionlist/{TerId}");
+    }
+    async Task NuevaCalibracion()
+    {
+        mostrarNuevaCalibracion = "";
+    }
+
+    void updatedatarow(int _id)
+    {
+        update = true;
+        id = _id;
+    }
+
+
+    async Task UpdateOferta(OfertaDiaria oferta)
+    {
+        var respuesta = await Http.PutAsJsonAsync($"api/OfertaDiaria{oferta.Id}", oferta);
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Success",
+                Text = "Actualizado correctamente",
+                Icon = SweetAlertIcon.Success,
+            });
+
+        await Atualizar();
+    }
+
+
+    async Task DeleteOferta(int _id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar",
+                Text = "¿ Estas seguro que deseas eliminar ?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Eliminar",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (!confirmado)
+        {
+            //context.PreventNavigation();
+        }
+        else
+        {
+            var respuesta = await Http.DeleteAsync($"api/OfertaDiaria{_id}");
+            await Atualizar();
+        }
+
+    }
+    void Cancelar()
+    {
+        state = false;
+        update = false;
+    }
+
+    async Task Atualizar()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<OfertaDiaria>>("api/OfertaDiaria");
+        if (resultado != null)
+            Ofertas = resultado;
+    }
+}

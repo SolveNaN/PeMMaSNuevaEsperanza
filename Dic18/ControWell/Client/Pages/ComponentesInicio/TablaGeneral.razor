@@ -1,0 +1,217 @@
+﻿@inject HttpClient Http
+<br />
+<div style="display:flex">
+    <div style="width:200px">
+        <label>Desde</label>
+        <input type="date" class="form-control" @bind-value=consulta.FechaInicial />
+    </div>
+    <div style="width:200px">
+        <label>Hasta</label>
+        <input type="date" class="form-control" @bind-value=consulta.FechaFinal />
+    </div>
+    <div style="width:100px">
+        <label>Nueva</label>
+        <button class="btn btn-success" @onclick=ActualizarDatos>Consultar</button>
+    </div>
+</div>
+<br />
+<Tabs EnableFadeEffect="true" NavStyle="NavStyle.Pills">
+    <Tab Title="Volumenes" IsActive="true">
+        <Content>
+            <div @onmousemove=ActualizarDatos>
+                <table class="table table-success table-striped">
+                    <thead>
+                        <tr>
+
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Tanque</th>
+                            <th scope="col">Tipo mov</th>
+                            <th scope="col">Medida</th>
+                            <th scope="col">Nivel Corregido</th>
+                            <th scope="col">Interfase</th>
+                            <th scope="col">Interfase Corregida</th>
+                            <th scope="col">TOV</th>
+                            <th scope="col">FW</th>
+                            <th scope="col">NSV</th>
+                            <th scope="col">AGUA</th>
+                            <th scope="col">DELTA</th>                            
+                            <th scope="col">Eliminar</th>
+                            <th scope="col">Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var i in Listado)
+                        {
+                            <tr>
+                                <td>@i.Fecha</td>
+                                <td>@i.Tanque.NombreTanque</td>
+                                <td>@i.TipoMovimiento</td>
+                                <td>@i.Nivel</td>
+                                <td>@i.NivelCorregido()</td>
+                                <td>@i.Interfase</td>
+                                <td>@i.InterfaseCorregida()</td>
+                                <td>@i.Tov</td>
+                                <td>@i.Fw</td>
+                                <td>@i.NSV()</td>
+                                <td>@i.AGUANETA()</td>
+                                <td>@i.DeltaNsv</td>                               
+
+                                @*INICIO BOTONES*@
+                                <td>
+                                    <button type="button" class="btn btn-primary">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-warning">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </td>
+                                @*FINAL BOTONES*@
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </Content>
+    </Tab>
+    <Tab Title="Factores">
+        <Content>
+            <div @onmousemove=ActualizarDatos>
+                <table class="table table-success table-striped">
+                    <thead>
+                        <tr>
+
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Tanque</th>
+                            <th scope="col">Tipo mov</th>
+                            <th scope="col">CTL</th>
+                            <th scope="col">CTCH</th>
+                            <th scope="col">S&W</th>
+                            <th scope="col">CSW</th>
+                            <th scope="col">Factor Cinta Nivel</th>
+                            <th scope="col">Factor Interfase</th>
+                            <th scope="col">Factor Tem TP7</th>
+                            <th scope="col">Eliminar</th>
+                            <th scope="col">Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var i in Listado)
+                        {
+                            <tr>
+                                <td>@i.Fecha</td>
+                                <td>@i.Tanque.NombreTanque</td>
+                                <td>@i.TipoMovimiento</td>
+                                <td>@i.CTL()</td>
+                                <td>@i.Ctsh()</td>
+                                <td>@i.Syw</td>
+                                <td>@i.CSW()</td>
+                                <td>@i.FactorCinta</td>
+                                <td>@i.FactorInterface</td>
+                                <td>@i.FactorTemTanque</td>
+
+                                @*INICIO BOTONES*@
+                                <td>
+                                    <button type="button" class="btn btn-primary">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-warning">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </td>
+                                @*FINAL BOTONES*@
+                            </tr>
+                        }
+
+
+                    </tbody>
+                </table>
+            </div>
+        </Content>
+    </Tab>
+    <Tab Title="Calculos">
+        <Content>
+            <div @onmousemove=ActualizarDatos>
+                <table class="table table-success table-striped">
+                    <thead>
+                        <tr>
+
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Tanque</th>
+                            <th scope="col">Tipo mov</th>
+                            <th scope="col">API</th>
+                            <th scope="col">TEMP</th>
+                            <th scope="col">API 60</th>
+                            <th scope="col">Temp Tanque</th>
+                            <th scope="col">Temp Tanque Corregida</th>
+                            <th scope="col">S&W</th>
+                            <th scope="col">Karl Ficher</th>
+                            <th scope="col">Usuario</th>
+                            <th scope="col">Eliminar</th>
+                            <th scope="col">Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var i in Listado)
+                        {
+                            <tr>
+                                <td>@i.Fecha</td>
+                                <td>@i.Tanque.NombreTanque</td>
+                                <td>@i.TipoMovimiento</td>
+                                <td>@i.Api</td>
+                                <td>@i.TemFluidoApi</td>
+                                <td>@i.Api60F()</td>
+                                <td>@i.TemTanque</td>
+                                <td>@i.TemTanqueCorregido()</td>
+                                <td>@i.CalcularSyw(i.Api60F(),i.KarlFisher)</td>
+                                <td>@i.KarlFisher</td>
+                                <td>@i.NombreUsuario</td>
+
+                                @*INICIO BOTONES*@
+                                <td>
+                                    <button type="button" class="btn btn-primary">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-warning">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </td>
+                                @*FINAL BOTONES*@
+                            </tr>
+                        }
+
+
+                    </tbody>
+                </table>
+            </div>
+        </Content>
+    </Tab>
+</Tabs>
+
+
+
+@code {
+    public static List<Balance> Listado = new List<Balance>();
+    Consulta consulta = new Consulta();
+
+    async Task ActualizarDatos()
+    {
+        var resultado = await Http.PostAsJsonAsync("api/Balance/Rango", consulta);
+        if (resultado != null)
+            Listado = await resultado.Content.ReadFromJsonAsync<List<Balance>>();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarDatos();       
+    }
+
+    async Task Consultar()
+    {
+        
+    }
+}

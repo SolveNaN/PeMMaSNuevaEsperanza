@@ -1,0 +1,281 @@
+﻿@page "/guialist"
+@using System;
+@using ControWell.Shared
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject SweetAlertService Swal
+<br />
+<div class="app-card alert alert-dismissible shadow-sm mb-4 border-left-decoration" role="alert" style="background: rgb(180,219,182);
+background: radial-gradient(circle, rgba(180,219,182,1) 27%, rgba(112,134,94,1) 100%);">
+    <div class="inner">
+        <div class="app-card-body p-3 p-lg-4">
+            <h3 class="mb-3">GUIAS</h3>
+            <div class="row gx-5 gy-3">
+                <div class="col-12 col-lg-6">
+
+                    <div>
+                       Puede crear la cantidad de guias que desee y consumirlos en orden, tambien puede anular o eliminar guias
+                    </div>
+            </div><!--//col-->
+                <div class="col-12 col-lg-6">
+                    <button class="btn app-btn-primary" data-bs-toggle="modal" data-bs-target="#ModalCrear">
+                       CREAR GUIAS
+                    </button>
+                    <button class="btn app-btn-primary"data-bs-toggle="offcanvas" data-bs-target="#guiasusadas" aria-controls="offcanvasRight">
+                        GUIAS USADAS
+                    </button>
+                    <button class="btn app-btn-primary" data-bs-toggle="offcanvas" data-bs-target="#guiasanuladas" aria-controls="offcanvasRight">
+                        GUIAS ANULADAS
+                    </button>
+                </div>
+                <!--//col--
+                </div><!--//col-->
+            </div><!--//row-->
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div><!--//app-card-body-->
+
+    </div><!--//inner-->
+</div><!--//app-card-->
+<br />
+<div class="app-card-body p-3 p-lg-4" style="height:400px;width:100%;background-color:#BFC9CA;border-radius:7px;overflow:auto ">
+    <h3>Guias Disponibles</h3>
+  <ul>
+        @foreach (var i in Guias)
+        {
+                <li>@i.NumeroGuia
+
+
+                <button type="button" class="btn btn-outline-warning" @onclick="(()=> DeleteGuia(i))"><i class="bi bi-trash3-fill"></i></button>
+
+
+                <button type="button" class="btn btn-outline-secondary" @onclick="(()=> AnularGuia(i))"><i class="bi bi-x-diamond-fill"></i></button>
+
+                <button type="button" class="btn btn-outline-success" @onclick="(()=> MarcarUsado(i))"><i class="bi bi-clipboard2-check-fill"></i></button>
+                </li>
+        }
+  </ul>
+
+</div>
+<br />
+<div class="app-card-body p-3 p-lg-4" style="height:100px;width:100%;background-color:#BFC9CA;border-radius:7px ">
+    <p>Cantidad de sellos disponibles </p> <b>@NumeroDeGuias</b>
+
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="ModalCrear" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <section id="contact" class="contact" style="background: rgb(34,195,158);
+background: linear-gradient(225deg, rgba(34,195,158,1) 0%, rgba(87,102,130,1) 100%);border-radius:5px">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12" data-aos="fade-up" data-aos-delay="100">
+
+                            <div class="php-email-form mt-4">
+                                <div class="modal-body">
+                                    <EditForm Model="GuiaInicial">
+                                        <InputText @bind-Value=GuiaInicial.Lote class="form-control" placeholder="LOTE"></InputText><br />
+                                        <input @bind-value=NumGuia type="number" class="form-control" placeholder="NUMERO DE LA GUIA" />
+                                        <br />
+                                        <input type="number" class="form-control" placeholder="CANTIDAD A CREAR" @bind-value=CantidadGuias />
+
+                                    </EditForm>
+                                </div>                                
+                                
+                            </div>
+                            <div class="text-center"><button class="btn btn-primary" @onclick=CrearGuias data-bs-dismiss="modal">Crear Guias</button></div>
+                            <br />
+                        </div>
+                    </div>
+
+                </div>
+            </section><!-- End Contact Section -->
+        </div>
+    </div>
+</div>
+@*INICIO FACEPLATE GUIAS USADOS*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="guiasusadas" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasRightLabel">GUIAS USADAS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        @foreach(var i in GuiasUsadas)
+        {
+            <p>@i.NumeroGuia</p>
+        }
+    </div>
+</div>
+
+@*FINAL FACEPLATE GUIAS USADOS*@
+
+@*INICIO FACEPLATE GUIAS ANULADOS*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="guiasanuladas" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasRightLabel">GUIAS ANULADAS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        @foreach (var i in GuiasAnuladas)
+        {
+            <p>@i.NumeroGuia</p>
+        }
+    </div>
+</div>
+
+@*FINAL FACEPLATE GUIAS ANULADOS*@
+@code {
+    int? CantidadGuias { get; set; }
+    int? NumeroDeGuias;
+    int? NumGuia ;
+    public static List<Guia> Guias = new List<Guia>();
+    public static List<Guia> GuiasAnuladas = new List<Guia>();
+    public static List<Guia> GuiasUsadas = new List<Guia>();
+    public static List<Guia> GuiasACrear = new List<Guia>();
+    Guia GuiaInicial = new Guia();
+
+    async Task FormatearValores()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Guia>>("api/Guia");
+        if (resultado != null)
+            Guias = resultado;
+
+        var resultadoAnul = await Http.GetFromJsonAsync<List<Guia>>("api/Guia/guasanuladas");
+        if (resultadoAnul != null)
+            GuiasAnuladas = resultadoAnul;
+
+
+        var resultadoUsad = await Http.GetFromJsonAsync<List<Guia>>("api/Guia/guasusadas");
+        if (resultadoUsad != null)
+            GuiasUsadas = resultadoUsad;
+        GuiasACrear.Clear();
+        NumeroDeGuias = Guias.Count();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await FormatearValores();
+    }
+
+    async Task CrearGuias()
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Guardar",
+                Text = "¿ Estas seguro de guardar guias ?",
+                Icon = SweetAlertIcon.Info,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Guardar",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (confirmado)
+        {
+            int? nInicial = NumGuia;
+            for (int i = 0; i < CantidadGuias; i++)
+            {
+                Guia guiatemporal = new Guia();
+                guiatemporal.Lote = GuiaInicial.Lote;
+                guiatemporal.Estado = 1;
+                guiatemporal.NumeroGuia = Convert.ToString(guiatemporal.Lote + " " + nInicial + i);
+                GuiasACrear.Add(guiatemporal);
+            }
+            var respuesta = await Http.PostAsJsonAsync("api/Guia/CrearGuias", GuiasACrear);
+            await FormatearValores();
+
+            var exito = await Swal.FireAsync(new SweetAlertOptions
+                {
+                    Position = "center",
+                    Title = "Guardado Correctamente",
+                    Icon = SweetAlertIcon.Success,
+                    ShowCancelButton = false,
+                    Timer = 1500
+                });
+        }
+
+
+        
+
+    }
+
+    async Task DeleteGuia(Guia guia)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar",
+                Text = $"¿ Estas seguro que deseas eliminar ? {guia.NumeroGuia}",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Eliminar",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (confirmado)
+        {
+            await Http.DeleteAsync($"api/Guia{guia.Id}");
+            await FormatearValores();
+        }
+        
+
+    }
+    async Task AnularGuia(Guia guia)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Anular",
+                Text = $"¿ Estas seguro que deseas anular ? {guia.NumeroGuia}",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Anular",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (!confirmado)
+        {
+            //context.PreventNavigation();
+        }
+        else
+        {
+            guia.Estado = -1;
+            guia.Fecha = DateTime.Now;
+            await Http.PostAsJsonAsync("api/Guia",guia);
+            await FormatearValores();
+        }
+    }
+
+
+    async Task MarcarUsado(Guia guia)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Usado",
+                Text = $"Marcar como usada {guia.NumeroGuia}",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Actualizar",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (!confirmado)
+        {
+            //context.PreventNavigation();
+        }
+        else
+        {
+            guia.Estado = 0;
+            guia.Fecha = DateTime.Now;
+            await Http.PutAsJsonAsync($"api/Guia{guia.Id}",guia);
+            await FormatearValores();
+        }
+    }
+}
+

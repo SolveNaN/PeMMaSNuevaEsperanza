@@ -1,0 +1,52 @@
+﻿@inject HttpClient Http
+<table class="table table-success table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Unidad</th>            
+            <th>Editar</th>
+            <th>Eliminar</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var i in VariableProcesos)
+        {
+            <tr>
+                <td>@i.Nombre</td>
+                <td>@i.Unidad</td>
+                
+
+
+                <td>
+                    <button type="button" class="btn btn-primary">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-warning">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </td>
+
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+@code {
+    public static List<VariableProceso> VariableProcesos = new List<VariableProceso>();
+
+    async Task ActualizarDatos()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<VariableProceso>>("api/VariableProceso");
+        if (resultado != null)
+            VariableProcesos = resultado;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarDatos();
+    }
+    
+}

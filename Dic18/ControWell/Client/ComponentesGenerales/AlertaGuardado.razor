@@ -1,0 +1,16 @@
+﻿@inject SweetAlertService Swal
+<h3>AlertaGuardado</h3>
+
+@code {
+    async Task Alerta()
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Position = "center",
+                Title = "Guardado Correctamente",
+                Icon = SweetAlertIcon.Success,
+                ShowCancelButton = false,
+                Timer = 1500
+            });
+    }
+}

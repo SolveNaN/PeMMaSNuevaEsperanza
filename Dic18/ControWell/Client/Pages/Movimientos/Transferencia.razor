@@ -1,0 +1,11 @@
+﻿<h3>TRANSFERIR</h3>
+<ControWell.Client.Pages.ComponentesInicio.TanqueGeneral BalanceModal="balance" />
+@code {
+    [Parameter]
+    public Balance? balance { get; set; }
+    Tanque tanqueinit = new Tanque();
+    protected override async Task OnInitializedAsync()
+    {
+        tanqueinit = balance.Tanque;
+    }
+}

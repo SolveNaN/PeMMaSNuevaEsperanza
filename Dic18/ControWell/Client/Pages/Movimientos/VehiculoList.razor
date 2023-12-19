@@ -1,0 +1,251 @@
+﻿@page "/vehiculos";
+@using ControWell.Shared
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject SweetAlertService Swal
+<table class="table table-success table-striped">
+    <thead>
+        <tr>
+            @* <th>Id</th>*@
+            <th>Identificador</th>
+            <th>Tipo Vehiculo</th>
+            <th>Capacidad</th>
+            <th>Estado</th>
+            <th></th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var Vehiculo in Vehiculos)
+        {
+
+            <tr>
+                <td>@Vehiculo.Id</td>
+                @if (update == true && Vehiculo.Id == id || Vehiculo.TipoVehiculo == "" && Vehiculo.Capacidad == "")
+                {
+                    <td><input @bind-value="@Vehiculo.TipoVehiculo" /></td>
+                }
+                else
+                {
+                    <td>@Vehiculo.TipoVehiculo</td>
+                }
+                @if (update == true && Vehiculo.Id == id || Vehiculo.TipoVehiculo == "" && Vehiculo.Capacidad == "")
+                {
+                    <td><input @bind-value="@Vehiculo.Capacidad" /></td>
+                }
+                else
+                {
+                    <td>@Vehiculo.Capacidad</td>
+                }
+                @if (update == true && Vehiculo.Id == id)
+                {
+                    <td><input @bind-value="@Vehiculo.Estado" /></td>
+                }
+                else
+                {
+                    <td>@Vehiculo.Estado</td>
+                }
+
+                <td>
+                    @if (update == true && Vehiculo.Id == id)
+                    {
+                        <button type="submit" class="btn btn-info" data-toggle="tooltip" title="Save" @onclick="(()=>UpdateVehiculo(Vehiculo))">
+                            <i style="position:initial" class="fa-solid fa-circle-check"></i>
+                        </button>
+                        <button class="btn btn-danger" @onclick="Cancelar" data-toggle="tooltip" title="Cancel">
+                            <i style="position:initial" class="fa-solid fa-ban"></i>
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary" data-toggle="tooltip" title="Update" @onclick="(()=> updatedatarow(Vehiculo.Id))"><i style="position:initial" class="oi oi-pencil"></i></button>
+                        <button class="btn btn-warning" data-toggle="tooltip" title="Delete" @onclick="(()=>  DeleteVehiculo(Vehiculo.Id))"><i style="position:initial" class="oi oi-trash"></i></button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@*Loading database*@
+@if (VehiculosState == false)
+{
+    <div id="db-spinner">
+        <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+}
+
+
+@*MODAL NUEVO Vehiculo*@
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ModalCrearVehiculo">
+    Nuevo Vehiculo
+</button>
+
+
+<!-- Modal -->
+<div class="modal fade" id="ModalCrearVehiculo" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <section id="contact" class="contact" style="background: rgb(34,195,158);
+background: linear-gradient(225deg, rgba(34,195,158,1) 0%, rgba(87,102,130,1) 100%);border-radius:5px">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12" data-aos="fade-up" data-aos-delay="100">
+
+                            <div class="php-email-form mt-4">
+                                <div class="modal-body">
+                                    <EditForm Model="NuevoVehiculo">
+                                        <InputText @bind-Value=NuevoVehiculo.TipoVehiculo class="form-control" placeholder="Tipo de vehiculo"></InputText>
+                                        <br />
+                                        <InputText @bind-Value=NuevoVehiculo.Capacidad class="form-control" placeholder="Capacidad del Vehiculo en bls"></InputText>
+                                                                                
+                                    </EditForm>
+                                </div>
+
+                            </div>
+                            <div class="text-center"><button class="btn btn-primary" @onclick=EviarVehiculo data-bs-dismiss="modal">Crear Guias</button></div>
+                            <br />
+                        </div>
+                    </div>
+
+                </div>
+            </section><!-- End Contact Section -->
+        </div>
+    </div>
+</div>
+@code {
+
+    Boolean state = false;
+    Boolean update = false;
+    int id;
+    Boolean VehiculosState = false;
+
+    public static List<Vehiculo> Vehiculos = new List<Vehiculo>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Vehiculo>>("api/Vehiculo");
+        if (resultado != null)
+            Vehiculos = resultado;
+        VehiculosState = true;
+    }
+
+    [Parameter]
+
+    public int? Id { get; set; }
+
+    Vehiculo Vehiculo = new Vehiculo();
+    Vehiculo NuevoVehiculo = new Vehiculo();
+
+
+    async Task EviarVehiculo()
+    {
+        try
+        {
+            NuevoVehiculo.Estado = "Activo";
+            await Http.PostAsJsonAsync("api/Vehiculo", NuevoVehiculo);           
+            var resultado = await Swal.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Success",
+                    Text = "Guardado correctamente",
+                    Icon = SweetAlertIcon.Success,
+                });
+        }
+        catch (InvalidCastException e)
+        {
+            Console.WriteLine(e);
+
+            state = false;
+            await Actualizar();
+        }
+        finally
+        {
+            state = false;
+            await Actualizar();
+        }
+    }
+
+    async Task DeleteVehiculo(int _id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar",
+                Text = "¿ Estas seguro que deseas eliminar ?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Eliminar",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (!confirmado)
+        {
+            //context.PreventNavigation();
+        }
+        else
+        {
+            await Http.DeleteAsync($"api/Vehiculo{_id}");
+            await Actualizar();
+        }
+
+    }
+
+    async Task UpdateVehiculo(Vehiculo Vehiculo)
+    {
+        await Http.PutAsJsonAsync($"api/Vehiculo{Vehiculo.Id}", Vehiculo);
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Success",
+                Text = "Actualizado correctamente",
+                Icon = SweetAlertIcon.Success,
+            });
+
+        update = false;
+    }
+
+    async Task AddVehiculo()
+    {
+        Vehiculo.TipoVehiculo = "";
+        Vehiculo.Capacidad = "";
+        Vehiculo.Estado = "Activo";
+
+        await Http.PostAsJsonAsync("api/Vehiculo", Vehiculo);
+
+    }
+
+    void updatedatarow(int _id)
+    {
+        update = true;
+        id = _id;
+    }
+
+    void Cancelar()
+    {
+        state = false;
+        update = false;
+    }
+
+    void NevegarVariablesLista()
+    {
+        //NanigationManager.NavigateTo("/crearVehiculo");
+        state = true;
+    }
+    void MostrarUnVehiculo(int id)
+    {
+        NavigationManager.NavigateTo($"singleVehiculo/{id}");
+    }
+
+    async Task Actualizar()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Vehiculo>>("api/Vehiculo");
+        if (resultado != null)
+            Vehiculos = resultado;
+    }
+
+}
+

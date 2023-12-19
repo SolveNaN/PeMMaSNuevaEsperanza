@@ -1,0 +1,285 @@
+﻿@inject HttpClient Http
+@using System.Data
+@using System.IO
+@using NPOI.XSSF.UserModel
+@using NPOI.SS.UserModel
+@inject SweetAlertService Swal
+<table class="table table-success table-striped">
+    <thead>
+        <tr>            
+            <th>Nombre del Tanque</th>
+            <th>Capacidad</th>
+            <th>Tipo de Fluido</th>
+            <th>Material</th>
+            <th>T Base °F</th>
+            <th>Editar</th>
+            <th>Eliminar</th>
+            <th>Aforo</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var i in Tanques)
+        {
+            <tr>
+                <td>@i.NombreTanque</td>
+                <td>@i.Capacidad</td>
+                <td>@i.TipoFluido</td>
+                <td>@i.Material</td>
+                <td>@i.TBase</td>
+                
+                <td>
+                    <button type="button" class="btn btn-primary">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-warning">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-info" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop" aria-controls="staticBackdrop" @onclick="()=>VerAforo(i.Id,i.NombreTanque)"><i class="bi bi-rulers"></i></button>
+                </td>
+            </tr>            
+        }        
+
+    </tbody>
+</table>
+<br />
+<div style="display:flex;justify-content:center">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        Nuevo Tanque
+    </button>
+</div>
+<!-- Button trigger modal -->
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <FormularioTanque />
+        </div>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop" aria-labelledby="staticBackdropLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="staticBackdropLabel">Aforos Tanque @NombreTanque</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        
+    </div>
+    <div class="offcanvas-body">
+        <div class="input-file">
+            <div class="input-file-container">
+                <InputFile OnChange="@ImportExcelFile" class="InputFile" accept=".xlsx" />
+            </div>
+        </div>
+        <div style="display:@verboton">
+            <button type="button" class="btn btn-outline-info" @onclick=ActualizarAforos>
+                Esperando Confirmación               
+            </button>
+            <div class="spinner-grow spinner-grow-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-danger">Eliminar Aforos</button>
+        <br />
+        <div>
+            <div style="@vertablaexcel">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            @foreach (DataColumn col in dt.Columns)
+                            {
+                                <th>@col.ColumnName</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (DataRow row in dt.Rows)
+                        {
+
+                            <tr>
+                                @foreach (DataColumn col in dt.Columns)
+                                {
+
+                                    <td>@row[col.ColumnName]</td>
+
+                                }
+                            </tr>
+
+
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <table class="table table-success table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Nivel</th>
+                        <th scope="col">Volumen</th>
+                        <th scope="col">Incremento</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var i in Aforos)
+                    {
+                        <tr>
+
+                            <td>@i.Nivel</td>
+                            <td>@i.Volumen</td>
+                            <td>@i.Incremento</td>  
+                        </tr>
+                    }                  
+
+                </tbody>
+            </table>
+            <div class="text-center" style="display:@verspiner">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    public static List<Tanque> Tanques = new List<Tanque>();
+    public static List<Aforo> Aforos = new List<Aforo>();
+    string NombreTanque = "Tanque";
+    string verspiner = "none";
+    string verboton = "none";
+    string vertablaexcel = "none";
+    int IddelTanque = 0;
+    async Task ActualizarDatos(){
+        var resultado = await Http.GetFromJsonAsync<List<Tanque>>("api/Tanque");
+        if (resultado != null)
+            Tanques = resultado;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarDatos();
+    }
+    async Task VerAforo(int idTanque,string nombretanque)
+    {
+        vertablaexcel = "none";
+        verspiner = "";
+        IddelTanque = idTanque;
+        NombreTanque = nombretanque;
+        var resultado = await Http.GetFromJsonAsync<List<Aforo>>($"api/Aforo/Tanque/{idTanque}");
+        if (resultado != null)
+            Aforos = resultado;
+        verspiner = "none";
+    }
+
+
+    //FUNCIONES PARA EXCEL
+    //funcion para administrar las celdas y visualizacion de excel
+    DataTable dt = new DataTable();
+    List<List<string>> MiArray = new List<List<string>>();
+    async Task ImportExcelFile(InputFileChangeEventArgs e)
+    {
+
+        verboton = "";
+        vertablaexcel = "";
+        verspiner = "";
+        var fileStream = e.File.OpenReadStream();
+        var ms = new MemoryStream();
+        await fileStream.CopyToAsync(ms);
+        fileStream.Close();
+        ms.Position = 0;
+
+        ISheet sheet;
+        var xsswb = new XSSFWorkbook(ms);
+
+        sheet = xsswb.GetSheetAt(0);
+        IRow hr = sheet.GetRow(0);
+        var rl = new List<string>();
+
+        int cc = hr.LastCellNum;
+        for (var j = 0; j < cc; j++)
+        {
+            ICell cell = hr.GetCell(j);
+            dt.Columns.Add(cell.ToString());
+        }
+
+        for (var j = (sheet.FirstRowNum + 1); j <= sheet.LastRowNum; j++)
+        {
+            var r = sheet.GetRow(j);
+            var listatemporal = new List<string>();
+            for (var i = r.FirstCellNum; i < cc; i++)
+            {
+                rl.Add(r.GetCell(i).ToString() ?? "");
+                listatemporal.Add(r.GetCell(i).ToString() ?? "");
+            }
+            MiArray.Add(listatemporal);
+            if (rl.Count > 0)
+            {
+                dt.Rows.Add(rl.ToArray());
+            }
+            rl.Clear();
+        }
+
+        verspiner = "none";
+    }
+    //fin de la funcion para administrar datos de excel
+    List<Aforo> ListaAforos = new List<Aforo>();
+    async Task ActualizarAforos(){
+        foreach (DataRow row in dt.Rows)
+        {
+            Aforo aforo = new Aforo();
+            Aforo NuevoAforo = new Aforo();//se inicializa el objeto nuevo
+
+            NuevoAforo.Nivel = default;//define una referencia para saber que si está o no y actualiza el nivel
+            foreach (DataColumn col in dt.Columns)
+            {
+                var celda = row[col.ColumnName];
+                var columna = col.ColumnName;
+                columna = columna.ToString();                
+                if (columna == "Altura")
+                {
+                    aforo.Nivel = Convert.ToDouble(celda);
+
+                }
+
+                if (columna == "Volumen")
+                {
+                    aforo.Volumen = Convert.ToDouble(celda);
+
+                }
+                if (columna == "Incremento")
+                {
+                    aforo.Incremento = Convert.ToDouble(celda);
+
+                }
+
+
+                aforo.TanqueId = IddelTanque;
+
+
+            }
+            ListaAforos.Add(aforo);
+
+
+        }
+        var ResListAfo = await Http.PostAsJsonAsync($"api/Aforo/ActualizarAforos", ListaAforos);
+        await Alerta();
+        verboton = "none";
+        vertablaexcel = "none";
+    }
+
+    async Task Alerta()
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Position = "center",
+                Title = "Guardado Correctamente",
+                Icon = SweetAlertIcon.Success,
+                ShowCancelButton = false,
+                Timer = 1500
+            });
+    }
+}

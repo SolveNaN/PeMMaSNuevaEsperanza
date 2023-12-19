@@ -1,0 +1,95 @@
+﻿@inject NavigationManager Navigation
+@inject SweetAlertService Swal
+@inject HttpClient Http
+
+<PageTitle>Data</PageTitle>
+<br />
+<br />
+<Tabs EnableFadeEffect="true" NavStyle="NavStyle.Pills">
+    <Tab Title="Produccion" IsActive="true">
+        <Content>
+            <div style="height:700px;overflow-y: scroll">
+                <div style="width:100%;display:flex;justify-content:center">
+                    <PlotlyChart @bind-Config="config" @bind-Layout="layout" @bind-Data="data" @ref="chart" />
+                    <button class="btn btn-primary" @onclick=AsignarValores>Producción acumulada @AdumuladoDeProduccion</button>
+                </div>
+            </div>
+        </Content>
+    </Tab>
+    <Tab Title="Volumen Crudo">
+        <Content>
+            <p class="mt-3">This is the placeholder content for the <b>Profile</b> tab.</p>
+        </Content>
+    </Tab>
+    <Tab Title="Volumen Nafta">
+        <Content>
+            <p class="mt-3">This is the placeholder content for the <b>Contact</b> tab.</p>
+        </Content>
+    </Tab>
+</Tabs>
+
+
+
+@code {
+
+    public static List<Balance> UltimosMovimientos = new List<Balance>();
+    public static List<Balance> UltimosMovimientosCrudo = new List<Balance>();
+    public static List<Balance> UltimosMovimientosNafta = new List<Balance>();
+    public static List<object> Fechas = new List<object>();
+    public static List<object> FechasVolCrudo = new List<object>();
+    public static List<object> ProducccionAcumulada = new List<object>();
+    public static List<object> ListadoAcumuladoVolumen = new List<object>();
+    double AdumuladoDeProduccion = 0;
+    double AdumuladoVolumen = 0;
+    PlotlyChart chart;
+    Config config = new Config();
+    Layout layout = new Layout();
+    // Using of the interface IList is important for the event callback!
+
+    public static List<Balance> Listado = new List<Balance>();
+    Consulta consulta = new Consulta();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resultado = await Http.PostAsJsonAsync("api/Balance/Rango", consulta);
+        if (resultado != null)
+            Listado = await resultado.Content.ReadFromJsonAsync<List<Balance>>();
+
+        foreach (var i in Listado)
+        {
+            if (i.TipoMovimiento == "Produccion")
+            {
+                Fechas.Add((object)i.Fecha);
+                AdumuladoDeProduccion += (double)i.DeltaNsv;
+                ProducccionAcumulada.Add((object)AdumuladoDeProduccion);
+
+            }
+        }
+        var ultimos = await Http.PostAsJsonAsync($"api/Balance/Aforos", consulta);
+        if (ultimos != null)
+        {
+            UltimosMovimientos = await ultimos.Content.ReadFromJsonAsync<List<Balance>>();
+        }
+        UltimosMovimientosCrudo = UltimosMovimientos.Where(x => x.Tanque.TipoFluido == "Crudo").ToList();
+        UltimosMovimientosNafta = UltimosMovimientos.Where(x => x.Tanque.TipoFluido == "Refinado").ToList();
+        
+    }
+
+    IList<ITrace> data = new List<ITrace>
+    {
+        new Scatter
+        {
+            Name = "ScatterTrace",
+
+            X = Fechas,
+            Y = ProducccionAcumulada,
+        }
+    };
+    async Task AsignarValores()
+    {
+        Navigation.NavigateTo("/fetchdata");
+        Navigation.NavigateTo("/");
+    }
+
+}

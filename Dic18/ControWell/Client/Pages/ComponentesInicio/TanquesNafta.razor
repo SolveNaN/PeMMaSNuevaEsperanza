@@ -1,0 +1,254 @@
+﻿@inject HttpClient Http
+<br />
+@*ESTOS SON LOS TANQUES QUE NO TIENEN MOVIMIENTOS*@
+<div class="container-fluid" style="display:flex;flex-wrap:wrap;justify-content:space-around">
+    <div style="width:210px;height:100px;margin:5px">
+
+        @foreach (var i in TanquesSinMov)
+        {
+            if (i.TipoFluido == "Refinado")
+            {
+                <div style="cursor:pointer" @onclick="(()=>  VerSinMovimientos(i))">
+                    <h6>@i.NombreTanque</h6>
+                    <img style="width:200px" src='/TanquesCrudo/tank01.png' />
+                </div>
+            }
+        }
+    </div>
+</div>
+@*ESTOS SON LOS TANQUES QUE SII TIENEN MOVIMIENTOS*@
+<div class="container-fluid" style="display:flex;flex-wrap:wrap;justify-content:space-around">
+    @foreach (var balance in UltimosMovimientos)
+    {
+        if (balance.Tanque.TipoFluido == "Refinado")
+        {
+            <div style="width:210px;height:100px;margin:5px;cursor:pointer" @onclick="(()=>VerModalTanqueNaf(balance))">
+
+                <div>
+                    <TanqueGeneral BalanceModal="balance" />
+                </div>
+
+            </div>
+        }
+    }
+</div>
+
+
+<Modal @ref="modal" title=@TanqueModal.NombreTanque IsVerticallyCentered="true" Size="ModalSize.ExtraLarge">
+    <BodyTemplate>
+        <div class="row" style="display:flex;flex-direction:row;justify-content:space-between;align-items:center;">
+
+            <div class="row">
+                <div class="col-6">
+                    <p>Volumen Bruto Total</p>
+                    <p>Volumen Neto</p>
+                    <p>Volumen de Agua Neto</p>
+                    <p>Fecha Ultimo Movimiento</p>
+                </div>
+                <div class="col-6">
+                    <p>@Math.Round(BalanceModal.Tov, 2) Bbls</p>
+                    <p>@Math.Round(BalanceModal.Nsv, 2) Bbls</p>
+                    <p>@Math.Round(BalanceModal.AguaNeta, 2) Bbls</p>
+                    <p>@BalanceModal.Fecha</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div style="display:flex;justify-content:center">
+                    <TanqueGeneral BalanceModal="BalanceModal" />
+                </div>
+            </div>
+
+        </div>
+
+
+    </BodyTemplate>
+    <FooterTemplate>
+        <br />
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" style="color:antiquewhite" data-bs-toggle="modal" data-bs-target="#TablaMovTanqueNaf">Ver Movimientos</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#NuevoMovNaf">Nuevo Movimiento</button>
+        <button type="button" class="btn btn-primary" ata-bs-toggle="modal" data-bs-target="#exampleModal">Transferir</button>
+    </FooterTemplate>
+</Modal>
+
+<div class="modal fade" id="NuevoMovNaf" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Nuevo Movimiento @TanqueModal.NombreTanque</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ControWell.Client.Pages.Movimientos.FormularioMovimiento tanque="TanqueModal" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" @onclick="(()=>  VerModalTanqueNaf(BalanceModal))">Volver</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="TablaMovTanqueNaf" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Movimientos @TanqueModal.NombreTanque</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="overflow:auto">
+                <MovimientosTanque tanque="TanqueModal" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" @onclick="(()=>  VerModalTanqueNaf(BalanceModal))">Volver</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div style="display:@verspiner">
+    <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <div class="spinner-grow text-secondary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <div class="spinner-grow text-success" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+@code {
+    public static List<Tanque> Tanques = new List<Tanque>();
+    public static List<Tanque> TanquesSinMov = new List<Tanque>();
+    public static List<Balance> UltimosMovimientos = new List<Balance>();
+    Tanque TanqueModal = new Tanque();
+    Balance BalanceModal = new Balance();
+
+    int idtanque = 0;
+    double CapacidadActual = 0;
+    double Porcentaje = 0;
+    double Altura = 0;
+    double AlturaAguaTotal = 0;
+    double Vacio = 200;
+    double VolVacio = 0;
+    double? Nivel = 0;
+    double? Interfase = 0;
+    string AlturaTanque = "0px";
+    string VacioTanque = "0px";
+    string AlturaAguaPX = "0px";
+    string TipoMovimientoActual = "";
+    string VerTanCrudo = "";
+    string VerTanNafta = "none";
+    string verspiner = "none";
+
+    Consulta consulta = new Consulta();
+    protected override async Task OnInitializedAsync()
+    {
+        verspiner = "";
+        var resultadoTan = await Http.GetFromJsonAsync<List<Tanque>>("api/Tanque");
+        if (resultadoTan != null)
+            Tanques = resultadoTan;
+        var resultadoTanSinMov = await Http.GetFromJsonAsync<List<Tanque>>("api/Tanque/SinMovimiento");
+        if (resultadoTanSinMov != null)
+            TanquesSinMov = resultadoTanSinMov;
+        var ultimos = await Http.PostAsJsonAsync($"api/Balance/Aforos", consulta);
+        UltimosMovimientos = await ultimos.Content.ReadFromJsonAsync<List<Balance>>();
+        verspiner = "none";
+    }
+
+    async Task VerSinMovimientos(Tanque tanque)
+    {
+        Balance balIndividual = new Balance();
+        balIndividual.Tanque = tanque;
+        balIndividual.TanqueId = tanque.Id;
+        idtanque = balIndividual.TanqueId;
+        foreach (var i in Tanques)
+        {
+            if (i.Id == balIndividual.TanqueId)
+            {
+                TanqueModal = i;
+
+            }
+        }
+        BalanceModal = balIndividual;
+        //variables del TANQUE
+
+        foreach (var i in Tanques)
+        {
+            if (i.Id == BalanceModal.TanqueId)
+            {
+                CapacidadActual = Convert.ToDouble(i.Capacidad);
+                Porcentaje = (BalanceModal.Tov / CapacidadActual) * 100;
+                var FraccionAgua = (BalanceModal.Fw / CapacidadActual);
+                var AlturaAgua = 60 * FraccionAgua;
+                AlturaAgua = Math.Round(AlturaAgua, 0);
+                AlturaAguaPX = Convert.ToString(AlturaAgua) + "px";
+                Porcentaje = Math.Round(Porcentaje, 2);
+                Altura = 60 * (Porcentaje / 100);
+                Altura = Convert.ToInt16(Altura);
+                Vacio = 60 - Altura;
+                AlturaTanque = Convert.ToString(Altura) + "px";
+                VacioTanque = Convert.ToString(Vacio) + "px";
+                VolVacio = CapacidadActual - BalanceModal.Tov;
+                VolVacio = Math.Round(VolVacio, 2);
+            }
+        }
+        await OnShowModalClickNaf();
+    }
+
+    async void VerModalTanqueNaf(Balance balIndividual)
+    {
+        idtanque = balIndividual.TanqueId;
+        foreach (var i in Tanques)
+        {
+            if (i.Id == balIndividual.TanqueId)
+            {
+                TanqueModal = i;
+
+            }
+        }
+        BalanceModal = balIndividual;
+
+        //variables del TANQUE
+
+        foreach (var i in Tanques)
+        {
+            if (i.Id == BalanceModal.TanqueId)
+            {
+                CapacidadActual = Convert.ToDouble(i.Capacidad);
+                Porcentaje = (BalanceModal.Tov / CapacidadActual) * 100;
+                var FraccionAgua = (BalanceModal.Fw / CapacidadActual);
+                var AlturaAgua = 60 * FraccionAgua;
+                AlturaAgua = Math.Round(AlturaAgua, 0);
+                AlturaAguaPX = Convert.ToString(AlturaAgua) + "px";
+                Porcentaje = Math.Round(Porcentaje, 2);
+                Altura = 60 * (Porcentaje / 100);
+                Altura = Convert.ToInt16(Altura);
+                Vacio = 60 - Altura;
+                AlturaTanque = Convert.ToString(Altura) + "px";
+                VacioTanque = Convert.ToString(Vacio) + "px";
+                VolVacio = CapacidadActual - BalanceModal.Tov;
+                VolVacio = Math.Round(VolVacio, 2);
+
+            }
+        }
+        await OnShowModalClickNaf();
+    }
+    private Modal modal = default!;
+
+    private async Task OnShowModalClickNaf()
+    {
+        await modal.ShowAsync();
+    }
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+}

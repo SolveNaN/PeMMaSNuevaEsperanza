@@ -1,0 +1,270 @@
+﻿@page "/sellolist"
+@using System;
+@using System.Text.RegularExpressions;
+@using ControWell.Shared
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject SweetAlertService Swal
+<div class="app-card alert alert-dismissible shadow-sm mb-4 border-left-decoration" role="alert" style="background: rgb(180,219,182);
+background: radial-gradient(circle, rgba(180,219,182,1) 27%, rgba(112,134,94,1) 100%);">
+    <div class="inner">
+        <div class="app-card-body p-3 p-lg-4">
+            <h3 class="mb-3">SELLOS</h3>
+            <div class="row gx-5 gy-3">
+                <div class="col-12 col-lg-6">
+
+                    <div>
+                        Puede crear la cantidad de sellos que desee y consumirlos en orden, tambien puede anular o eliminar sellos
+                    </div>
+                </div><!--//col-->
+                <div class="col-12 col-lg-6">
+                    <button class="btn app-btn-primary" data-bs-toggle="modal" data-bs-target="#ModalCrearSello">
+                        CREAR SELLOS
+                    </button>
+                    <button class="btn app-btn-primary" data-bs-toggle="offcanvas" data-bs-target="#sellosusados" aria-controls="offcanvasRight">
+                        SELLOS USADOS
+                    </button>
+                    <button class="btn app-btn-primary"data-bs-toggle="offcanvas" data-bs-target="#sellosanulados" aria-controls="offcanvasRight">
+                        SELLOS ANULADOS
+                    </button>
+                </div>
+                <!--//col--
+                </div><!--//col-->
+            </div><!--//row-->
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div><!--//app-card-body-->
+
+    </div><!--//inner-->
+</div><!--//app-card-->
+<br />
+<div class="app-card-body p-3 p-lg-4" style="height:500px;width:100%;background-color:#BFC9CA;border-radius:7px;overflow:auto ">
+    <h3>Sellos Disponibles</h3>
+  <ul>
+        @foreach (var i in Sellos)
+        {
+            <li>@i.IndiceSello @i.NumeroSello
+
+
+                <button type="button" class="btn btn-outline-warning" @onclick="(()=> DeleteSello(i))"><i class="bi bi-trash3-fill"></i></button>
+
+
+                <button type="button" class="btn btn-outline-secondary" @onclick="(()=> AnularSello(i))"><i class="bi bi-x-diamond-fill"></i></button>
+
+                <button type="button" class="btn btn-outline-success" @onclick="(()=> MarcarUsado(i))"><i class="bi bi-clipboard2-check-fill"></i></button>
+            </li>
+        }
+  </ul>
+    
+</div>
+<br />
+<div class="app-card-body p-3 p-lg-4" style="height:100px;width:100%;background-color:#BFC9CA;border-radius:7px ">
+    <p>Cantidad de sellos disponibles </p> <b>@NumeroDeSellos</b>
+
+</div>
+
+<!-- CREAR -->
+<div class="modal fade" id="ModalCrearSello" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">GENERAR SELLOS</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="SelloInicial">
+                    <InputText @bind-Value=SelloInicial.IndiceSello class="form-control" placeholder="INDICE SELLO"></InputText><br />
+                    <InputNumber @bind-Value=SelloInicial.NumeroSello class="form-control" placeholder="NUMERO SELLO"></InputNumber><br />
+                    <InputText @bind-Value=SelloInicial.Lote class="form-control"placeholder="LOTE"></InputText><br />  
+                    <input type="number" class="form-control" placeholder="CANTIDAD A CREAR" @bind-value=CantidadSellos />
+                    
+                </EditForm>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" @onclick=CrearSellos data-bs-dismiss="modal">CREAR SELLOS</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*INICIO FACEPLATE SELLOS USADOS*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="sellosusados" aria-labelledby="offcanvasRightLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasRightLabel">SELLOS USADOS</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+        @foreach (var i in SellosUsados)
+        {
+            <p>@i.IndiceSello @i.NumeroSello</p>
+        }
+  </div>
+</div>
+
+@*FINAL FACEPLATE SELLOS USADOS*@
+
+@*INICIO FACEPLATE SELLOS ANULADOS*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="sellosanulados" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasRightLabel">SELLOS ANULADOS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        @foreach(var i in SellosAnulados)
+        {
+            <p>@i.IndiceSello @i.NumeroSello</p>
+        }
+    </div>
+</div>
+
+@*FINAL FACEPLATE SELLOS ANULADOS*@
+@code {
+
+
+    public static List<Sello> Sellos = new List<Sello>();
+    public static List<Sello> SellosAnulados = new List<Sello>();
+    public static List<Sello> SellosUsados = new List<Sello>();
+    public static List<Sello> SellosACrear = new List<Sello>();
+    Sello SelloInicial = new Sello();
+    Sello SelloEdit = new Sello();
+
+    int? CantidadSellos = null;
+    int NumeroDeSellos = 0;
+     async Task ActualizarListatos()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Sello>>("api/sello");
+        if (resultado != null)
+            Sellos = resultado;
+
+        var resultadoSellosAnulados = await Http.GetFromJsonAsync<List<Sello>>("api/sello/SellosAnulados");
+        if (resultadoSellosAnulados != null)
+            SellosAnulados = resultadoSellosAnulados;
+        var resultadoSellosUsados = await Http.GetFromJsonAsync<List<Sello>>("api/sello/SellosUsados");
+        if (resultadoSellosUsados != null)
+            SellosUsados = resultadoSellosUsados;
+
+        NumeroDeSellos = Sellos.Count();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await ActualizarListatos();
+
+    }
+
+    async Task CrearSellos()
+    {
+
+        int? nInicial = SelloInicial.NumeroSello;
+        for (int i = 0; i < CantidadSellos; i++)
+        {
+            Sello sellotemporal = new Sello();
+            sellotemporal.IndiceSello = SelloInicial.IndiceSello;
+            sellotemporal.Lote = SelloInicial.Lote;
+            sellotemporal.Estado = 1;
+            sellotemporal.NumeroSello = nInicial+ i;
+            SellosACrear.Add(sellotemporal);
+        }
+        var respuesta = await Http.PostAsJsonAsync("api/Sello/CrearSellos", SellosACrear);
+        await FormatearValores();
+    }
+
+    async Task FormatearValores()
+    {
+        var resultado = await Http.GetFromJsonAsync<List<Sello>>("api/sello");        
+        if (resultado != null)
+            Sellos = resultado;
+
+        NumeroDeSellos = Sellos.Count();
+        SelloInicial.Lote = null;
+        SelloInicial.NumeroSello = null;
+        SelloInicial.IndiceSello = null;
+        CantidadSellos = null;
+
+    }
+    async Task AsignarValoresSello(Sello sello)
+    {
+        SelloEdit = sello;
+    }
+
+    async Task DeleteSello(Sello sello)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Eliminar",
+                Text = $"¿ Estas seguro que deseas eliminar ? {sello.IndiceSello} {sello.NumeroSello}",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Eliminar",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (confirmado)
+        {
+            await Http.DeleteAsync($"api/Sello{sello.Id}");
+            await ActualizarListatos();
+        }        
+
+    }
+
+    async Task AnularSello(Sello sello)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Anular",
+                Text = $"¿ Estas seguro que deseas anular ? {sello.IndiceSello} {sello.NumeroSello}",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Anular",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (!confirmado)
+        {
+            //context.PreventNavigation();
+        }
+        else
+        {
+            sello.Estado = -1;
+            sello.CreatedAt = DateTime.Now;            
+            await Http.PutAsJsonAsync($"api/Sello{sello.Id}", sello);
+            await ActualizarListatos();
+        }
+    }
+
+    async Task MarcarUsado(Sello sello)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Usado",
+                Text = $"Marcar como usado {sello.IndiceSello} {sello.NumeroSello}",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Actualizar",
+                CancelButtonText = "Cancelar"
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (!confirmado)
+        {
+            //context.PreventNavigation();
+        }
+        else
+        {
+            sello.Estado = 0;
+            sello.CreatedAt = DateTime.Now;
+            await Http.PutAsJsonAsync($"api/Sello{sello.Id}", sello);
+            await ActualizarListatos();
+        }
+    }
+
+   
+}
+
